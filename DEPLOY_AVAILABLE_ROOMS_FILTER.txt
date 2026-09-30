@@ -1,2 +1,3 @@
 Production deploy trigger: only KOSTPRO AVAILABLE rooms are exposed to KostIn.
 Live sync: refresh KOSTPRO availability every 5 seconds on KostIn catalog and property pages.
+Deployment trigger: 2026-09-30T13:17:00.297Z
