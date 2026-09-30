@@ -13,10 +13,10 @@ export default function Booking() {
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault(); setBusy(true); setMessage('');
     const form=new FormData(e.currentTarget);
-    const {error}=await supabase.from('bookings').insert({
-      property_id:propertyId, room_id:roomId, guest_name:String(form.get('name')||''),
-      guest_phone:String(form.get('phone')||''), check_in:String(form.get('checkIn')||''),
-      duration_months:Number(form.get('duration')||1), status:'PENDING'
+    const {error}=await supabase.rpc('create_pending_booking', {
+      p_property_id:propertyId, p_room_id:roomId, p_guest_name:String(form.get('name')||''),
+      p_guest_phone:String(form.get('phone')||''), p_check_in:String(form.get('checkIn')||''),
+      p_duration_months:Number(form.get('duration')||1)
     });
     setBusy(false);
     setMessage(error?'Booking belum berhasil. Kamar mungkin sudah tidak tersedia.':'Booking berhasil dikirim. Status: menunggu konfirmasi.');
