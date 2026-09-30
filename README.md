@@ -16,13 +16,7 @@ KostIn adalah marketplace khusus kost yang berdiri terpisah dari KOSTPRO.
 Cari lokasi → lihat kamar tersedia → pilih kamar → booking → booking masuk database KostIn.
 
 ## Environment
-```
-NEXT_PUBLIC_SUPABASE_URL=https://jpgqjadvecvuyximqbxw.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<KostIn publishable key>
-KOSTPRO_READ_API_URL=<GET-only KOSTPRO endpoint>
-```
-
-Jika `KOSTPRO_READ_API_URL` belum diisi, dashboard memakai data demo agar aplikasi tetap dapat diuji. Setelah endpoint read-only KOSTPRO tersedia, dashboard otomatis mencoba mengambil data live.
+`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server only), dan `KOSTPRO_READ_API_URL`.
 
 ## Deploy
 Import repository ini sebagai **project Vercel baru bernama KostIn**. Jangan hubungkan repository ini ke project Vercel `kostpro`.
@@ -32,5 +26,8 @@ KostIn menggunakan Supabase project terpisah. Tabel utama:
 - properties
 - rooms
 - bookings
+- property_members
 
 RLS aktif. Booking publik hanya boleh membuat status `PENDING` dan hanya jika kamar masih `AVAILABLE` serta property/room cocok.
+
+Deployment trigger: verify KostIn production deployment.
