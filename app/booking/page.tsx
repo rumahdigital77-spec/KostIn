@@ -14,7 +14,6 @@ export default function Booking() {
   const [roomId,setRoomId]=useState('');
   const [price,setPrice]=useState(0);
   const [paymentMethod,setPaymentMethod]=useState('TRANSFER_BANK');
-  const [proofFile,setProofFile]=useState<File|null>(null);
   const [message,setMessage]=useState('');
   const [busy,setBusy]=useState(false);
 
@@ -29,11 +28,6 @@ export default function Booking() {
     e.preventDefault();
     setBusy(true);
     setMessage('');
-    if (proofFile && proofFile.size > 5 * 1024 * 1024) {
-      setMessage('Bukti pembayaran maksimal 5 MB.');
-      setBusy(false);
-      return;
-    }
     const form=new FormData(e.currentTarget);
 
     try {
@@ -52,18 +46,6 @@ export default function Booking() {
         setMessage('Mohon lengkapi data booking dan pastikan harga kamar tersedia.');
         return;
       }
-      if (!proofFile) {
-        setMessage('Bukti pembayaran wajib di-upload sebelum booking dikirim.');
-        return;
-      }
-      const safeName = proofFile.name.toLowerCase().replace(/[^a-z0-9.]+/g,'-');
-      const proofPath = 'booking-proofs/' + Date.now() + '-' + safeName;
-      const { error: uploadError } = await supabase.storage.from('booking-proofs').upload(proofPath, proofFile, { upsert:false, contentType:proofFile.type });
-      if (uploadError) {
-        setMessage('Bukti pembayaran gagal di-upload: ' + uploadError.message);
-        return;
-      }
-
       const { data, error } = await supabase.rpc('create_kostin_booking_in_kostpro', {
         p_property_id: payload.propertyId,
         p_room_id: payload.roomId,
@@ -102,7 +84,6 @@ export default function Booking() {
           guest_phone: payload.phone,
           room_price: payload.roomPrice,
           payment_method: payload.paymentMethod,
-          proof_path: proofPath
         });
         paymentSaveError = result.error;
         if (!paymentSaveError) break;
@@ -138,7 +119,6 @@ export default function Booking() {
             <label>Durasi<select name="duration" defaultValue="1"><option value="1">1 bulan</option><option value="3">3 bulan</option><option value="6">6 bulan</option><option value="12">12 bulan</option></select></label>
             <label>Harga kamar / bulan<input value={new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(price)} readOnly/></label>
             <label>Metode pembayaran<select name="paymentMethod" value={paymentMethod} onChange={e=>setPaymentMethod(e.target.value)}><option value="TRANSFER_BANK">Transfer Bank</option><option value="QRIS">QRIS</option><option value="E-WALLET">E-Wallet</option><option value="CASH">Tunai</option></select></label>
-            <label>Bukti pembayaran<input required type="file" accept="image/*,.pdf" onChange={e=>setProofFile(e.target.files?.[0]||null)}/><small>JPG, PNG atau PDF. Maksimal 5 MB.</small></label>
             <button disabled={busy} type="submit">{busy?'Mengirim ke KOSTPRO…':'Kirim Booking'}</button>
             {message&&<div className="notice">{message}</div>}
           </form>}
