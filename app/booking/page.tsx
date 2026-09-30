@@ -1,7 +1,11 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+const KOSTPRO_URL='https://vynsxajbqkgkudfbraog.supabase.co';
+const KOSTPRO_KEY='sb_publishable_0_9DNdvMlgPAebzVzk0HZw_iLlbg7GI';
+const kostpro=createClient(KOSTPRO_URL,KOSTPRO_KEY,{auth:{autoRefreshToken:false,persistSession:false}});
 
 export default function Booking() {
   const [propertyId,setPropertyId]=useState('');
@@ -13,19 +17,26 @@ export default function Booking() {
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault(); setBusy(true); setMessage('');
     const form=new FormData(e.currentTarget);
-    const {error}=await supabase.rpc('create_pending_booking', {
-      p_property_id:propertyId, p_room_id:roomId, p_guest_name:String(form.get('name')||''),
-      p_guest_phone:String(form.get('phone')||''), p_check_in:String(form.get('checkIn')||''),
+    const {error}=await kostpro.rpc('create_kostin_booking_in_kostpro', {
+      p_property_id:propertyId,
+      p_room_id:roomId,
+      p_guest_name:String(form.get('name')||''),
+      p_guest_phone:String(form.get('phone')||''),
+      p_check_in:String(form.get('checkIn')||''),
       p_duration_months:Number(form.get('duration')||1)
     });
     setBusy(false);
-    setMessage(error?'Booking belum berhasil. Kamar mungkin sudah tidak tersedia.':'Booking berhasil dikirim. Status: menunggu konfirmasi.');
-    if(!error)e.currentTarget.reset();
+    if(error){
+      setMessage(error.message||'Booking belum berhasil. Kamar mungkin sudah tidak tersedia.');
+      return;
+    }
+    setMessage('Booking berhasil dikirim. Data booking sudah masuk ke KOSTPRO dan kamar berubah menjadi RESERVED.');
+    e.currentTarget.reset();
   }
 
   return <main className="bookingPage"><a href="/" className="back">← Kembali</a><div className="bookingCard">
     <span className="eyebrow">BOOKING KAMAR</span><h1>Amankan kamar pilihanmu.</h1>
-    <p>Booking tersimpan di database KostIn. Database KOSTPRO tidak pernah ditulis dari halaman ini.</p>
+    <p>Booking dari KostIn sekarang langsung tersimpan ke property KOSTPRO yang dipilih. Tidak membuat property baru dan tidak mencampur data property lain.</p>
     {!propertyId||!roomId?<div className="notice">Kamar belum dipilih. Silakan kembali ke daftar kamar tersedia.</div>:<form onSubmit={submit}>
       <label>Nama lengkap<input required name="name" placeholder="Nama kamu"/></label>
       <label>Nomor WhatsApp<input required name="phone" placeholder="08xxxxxxxxxx"/></label>
