@@ -10,7 +10,7 @@ const supabase = createClient(
 );
 
 type Room = { id?: string; source_room_id?: string; name: string; room_type?: string; price_monthly: number; status: string };
-type Property = { id?: string; source_property_id?: string; name: string; city?: string; address?: string; cover_url?: string | null; rooms?: Room[] };
+type Property = { id?: string; source_property_id?: string; name: string; city?: string; address?: string; cover_url?: string | null; rooms?: Room[]; rating?: number; review_count?: number };
 
 export default function Home(){
  const [properties,setProperties]=useState<Property[]>([]);
@@ -29,7 +29,7 @@ export default function Home(){
  useEffect(()=>{
    fetch('/api/kostpro/properties',{cache:'no-store'})
      .then(async r=>{const d=await r.json(); if(!r.ok) throw new Error(d.error||'Gagal membaca data KOSTPRO'); return d;})
-     .then(d=>{setProperties(Array.isArray(d.properties)?d.properties:[]);setSource(d.source==='kostpro'?'KOSTPRO':'KOSONG');setError('');})
+     .then(async d=>{const list=Array.isArray(d.properties)?d.properties:[]; const rated=await Promise.all(list.map(async (p:Property)=>{const {data}=await supabase.rpc('get_kostin_property_reviews',{p_source_property_id:String(p.source_property_id||'')});const reviews=Array.isArray(data)?data:[];const avg=reviews.length?reviews.reduce((s:number,r:{rating:number})=>s+Number(r.rating||0),0)/reviews.length:0;return {...p,rating:Number(avg.toFixed(1)),review_count:reviews.length};}));setProperties(rated);setSource(d.source==='kostpro'?'KOSTPRO':'KOSONG');setError('');})
      .catch(e=>{setProperties([]);setSource('ERROR');setError(e instanceof Error?e.message:'Gagal membaca data KOSTPRO');});
    supabase.auth.getUser().then(({data})=>setUserEmail(data.user?.email||''));
  },[]);
@@ -101,7 +101,7 @@ export default function Home(){
    <div className="propertyGrid">
     {filtered.map(p=>{const available=(p.rooms||[]).filter(r=>String(r.status).toUpperCase()==='AVAILABLE').length; return <Link className="propertyCard" href={propertyHref(p)} key={p.source_property_id||p.id||p.name}>
       <div className="propertyPhoto">{p.cover_url?<img src={p.cover_url} alt={p.name}/>:<span>🏠</span>}<label>{available} KAMAR TERSEDIA</label><span className="propertyArrow">→</span></div>
-      <div className="propertyBody"><div className="place">{p.city||'Indonesia'}</div><h3>{p.name}</h3><p>{p.address||'Lihat tipe kamar yang tersedia'}</p><strong>Lihat kamar yang tersedia <span>→</span></strong></div>
+      <div className="propertyBody"><div className="place">{p.city||'Indonesia'}</div><h3>{p.name}</h3><p>{p.address||'Lihat tipe kamar yang tersedia'}</p><div className="ratingPreview">{p.review_count?<><span className="stars" aria-label={`Rating ${p.rating} dari 5`}>{[1,2,3,4,5].map(i=><span key={i}>{i<=Math.round(p.rating||0)?'★':'☆'}</span>)}</span><span className="ratingNumber">{p.rating?.toFixed(1)}</span><span className="reviewCount">({p.review_count} ulasan)</span></>:<span className="ratingEmpty">Belum ada ulasan</span>}</div><strong>Lihat kamar yang tersedia <span>→</span></strong></div>
     </Link>})}
    </div>
    {error&&<div className="empty">Data KOSTPRO belum dapat dibaca. {error}</div>}
