@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
 export async function GET() {
   const source = process.env.KOSTPRO_READ_API_URL;
@@ -12,7 +14,7 @@ export async function GET() {
     for (const property of properties) {
       const sourcePropertyId = String(property.source_property_id ?? property.id ?? '');
       if (!sourcePropertyId) continue;
-      const { data: localProperty } = await supabase.from('properties').upsert({
+      const { data: localProperty } = await admin.from('properties').upsert({
         source_property_id: sourcePropertyId,
         name: property.name ?? 'Property',
         city: property.city ?? null,
@@ -23,7 +25,7 @@ export async function GET() {
       if (!localProperty) continue;
       const rooms = Array.isArray(property.rooms) ? property.rooms : [];
       if (rooms.length) {
-        await supabase.from('rooms').upsert(rooms.map((room:any) => ({
+        await admin.from('rooms').upsert(rooms.map((room:any) => ({
           property_id: localProperty.id,
           source_room_id: String(room.source_room_id ?? room.id ?? ''),
           name: room.name ?? 'Kamar',
