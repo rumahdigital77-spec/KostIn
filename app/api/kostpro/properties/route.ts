@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 export const dynamic = 'force-dynamic';
 
 const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-const DEFAULT_KOSTPRO_READ_API = 'https://kost-management-sistem.vercel.app/api/kostin/properties';
+const DEFAULT_KOSTPRO_READ_API = 'https://kostpro.vercel.app/api/kostin/properties';
 
 export async function GET() {
   const source = process.env.KOSTPRO_READ_API_URL || DEFAULT_KOSTPRO_READ_API;
