@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 
 type Room = { id: string; name: string; room_type?: string; price_monthly: number; status: string };
 type Property = { id: string; name: string; city?: string; address?: string; cover_url?: string | null; rooms?: Room[] };
@@ -24,7 +25,7 @@ export default function Home(){
  <section className="hero"><div><span className="eyebrow">MARKETPLACE KHUSUS KOST</span><h1>Temukan kost yang <em>pas</em> untukmu.</h1><p>Cari kamar yang benar-benar tersedia, lihat detail, lalu booking langsung.</p></div><div className="search"><input value={q} onChange={e=>setQ(e.target.value)} placeholder="📍 Kota, area, atau nama kost"/><button>Cari Kost</button></div></section>
  <section className="stats"><div><b>{properties.length}</b><span>Kost tampil</span></div><div><b>{available.length}</b><span>Kamar tersedia</span></div><div><b>{source}</b><span>Sumber data</span></div></section>
  <section className="section"><div className="sectionHead"><div><span className="eyebrow">KAMAR TERSEDIA</span><h2>Booking tanpa menebak status</h2></div></div>
- <div className="grid">{available.map(({p,r})=><article className="card" key={r.id}><div className="photo">{p.cover_url?<img src={p.cover_url} alt=""/>:<span>🏠</span>}<label>TERSEDIA</label></div><div className="body"><div className="place">{p.city||'Indonesia'}</div><h3>{p.name}</h3><div className="fac">🛏️ {r.name} · {r.room_type||'Kamar'}</div><div className="bottom"><strong>{money(Number(r.price_monthly))}<small>/bulan</small></strong></div><a className="book" href={'/booking?propertyId='+encodeURIComponent(p.id)+'&roomId='+encodeURIComponent(r.id)}>Lihat & Booking</a></div></article>)}</div>
+ <div className="grid">{available.map(({p,r})=><article className="card" key={r.id}><div className="photo">{p.cover_url?<img src={p.cover_url} alt=""/>:<span>🏠</span>}<label>TERSEDIA</label></div><div className="body"><div className="place">{p.city||'Indonesia'}</div><h3>{p.name}</h3><div className="fac">🛏️ {r.name} · {r.room_type||'Kamar'}</div><div className="bottom"><strong>{money(Number(r.price_monthly))}<small>/bulan</small></strong></div><Link className="book" href={'/kost/'+encodeURIComponent(p.id)}>Lihat Detail & Booking</Link></div></article>)}</div>
  {available.length===0&&<div className="empty">Belum ada kamar tersedia untuk pencarian ini.</div>}</section>
  <footer>KostIn © 2026 · KOSTPRO adalah master data. Integrasi hanya READ-ONLY.</footer></main>;
 }
