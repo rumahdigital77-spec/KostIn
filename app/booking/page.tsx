@@ -1,6 +1,11 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+const KOSTPRO_URL = 'https://vynsxajbqkgkudfbraog.supabase.co';
+const KOSTPRO_KEY = 'sb_publishable_0_9DNdvMlgPAebzVzk0HZw_iLlbg7GI';
+const supabase = createClient(KOSTPRO_URL, KOSTPRO_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
 
 export default function Booking() {
   const [propertyId,setPropertyId]=useState('');
@@ -21,27 +26,37 @@ export default function Booking() {
     const form=new FormData(e.currentTarget);
 
     try {
-      const response=await fetch('/api/booking',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          propertyId,
-          roomId,
-          name:String(form.get('name')||''),
-          phone:String(form.get('phone')||''),
-          checkIn:String(form.get('checkIn')||''),
-          duration:Number(form.get('duration')||1)
-        })
+      const payload={
+        propertyId,
+        roomId,
+        name:String(form.get('name')||'').trim(),
+        phone:String(form.get('phone')||'').trim(),
+        checkIn:String(form.get('checkIn')||'').trim(),
+        duration:Number(form.get('duration')||1)
+      };
+
+      const { data, error } = await supabase.rpc('create_kostin_booking_in_kostpro', {
+        p_property_id: payload.propertyId,
+        p_room_id: payload.roomId,
+        p_guest_name: payload.name,
+        p_guest_phone: payload.phone,
+        p_check_in: payload.checkIn,
+        p_duration_months: payload.duration
       });
-      const result=await response.json().catch(()=>({}));
-      if(!response.ok || !result.success){
-        setMessage(result.error||'Booking belum berhasil dikirim ke KOSTPRO.');
+
+      if(error){
+        const detail=error.message||'Booking ditolak oleh KOSTPRO.';
+        setMessage(detail.includes('Kamar sudah tidak tersedia') ? 'Kamar sudah tidak tersedia. Silakan pilih kamar lain.' : detail);
+        return;
+      }
+      if(!data?.success){
+        setMessage('Booking belum berhasil dikirim ke KOSTPRO.');
         return;
       }
       setMessage('✓ Booking berhasil dikirim ke KOSTPRO. Status kamar sekarang RESERVED dan booking tercatat sebagai PENDING.');
       e.currentTarget.reset();
-    } catch {
-      setMessage('Koneksi booking gagal. Silakan coba lagi.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Koneksi booking gagal. Silakan coba lagi.');
     } finally {
       setBusy(false);
     }
