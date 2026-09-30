@@ -48,7 +48,7 @@ export default function Booking() {
 
       if(error){
         const detail=error.message||'Booking ditolak oleh KOSTPRO.';
-        setMessage(detail.includes('Kamar sudah tidak tersedia') ? 'Kamar sudah tidak tersedia. Silakan pilih kamar lain.' : detail);
+        setMessage(detail.includes('Kamar sudah tidak tersedia') ? 'Kamar sudah tidak tersedia. Silakan pilih kamar lain.' : detail.includes('Tanggal check-in') ? detail : detail.includes('Data booking') ? 'Mohon lengkapi semua data booking.' : 'Booking belum dapat dikirim ke KOSTPRO. Silakan coba lagi.');
         return;
       }
       if(!data?.success){
@@ -58,7 +58,7 @@ export default function Booking() {
       setMessage('✓ Booking berhasil dikirim ke KOSTPRO. Status kamar sekarang RESERVED dan booking tercatat sebagai PENDING.');
       e.currentTarget.reset();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Koneksi booking gagal. Silakan coba lagi.');
+      setMessage('Koneksi ke KOSTPRO terputus atau permintaan terlalu lama. Silakan coba lagi.');
     } finally {
       setBusy(false);
     }
