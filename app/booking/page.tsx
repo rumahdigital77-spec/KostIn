@@ -10,6 +10,7 @@ const supabase = createClient(KOSTPRO_URL, KOSTPRO_KEY, { auth: { autoRefreshTok
 export default function Booking() {
   const [propertyId,setPropertyId]=useState('');
   const [roomId,setRoomId]=useState('');
+  const [price,setPrice]=useState(0);
   const [message,setMessage]=useState('');
   const [busy,setBusy]=useState(false);
 
@@ -17,6 +18,7 @@ export default function Booking() {
     const p=new URLSearchParams(window.location.search);
     setPropertyId(p.get('propertyId')||'');
     setRoomId(p.get('roomId')||'');
+    setPrice(Math.max(0, Number(p.get('price')||0)));
   },[]);
 
   async function submit(e: FormEvent<HTMLFormElement>) {
@@ -68,6 +70,7 @@ export default function Booking() {
       <span className="eyebrow">BOOKING KAMAR</span>
       <h1>Amankan kamar pilihanmu.</h1>
       <p>Data booking dikirim langsung ke master KOSTPRO. Data property lain tidak dicampur.</p>
+      <div className="notice"><strong>Harga kamar: {new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(price)}</strong><br/><small>Harga per bulan, mengikuti harga kamar yang dipublikasikan dari KOSTPRO.</small></div>
       {!propertyId||!roomId
         ? <div className="notice">Kamar belum dipilih. Silakan kembali ke daftar kamar tersedia.</div>
         : <form onSubmit={submit}>
