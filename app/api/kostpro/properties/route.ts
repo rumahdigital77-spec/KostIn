@@ -25,7 +25,16 @@ export async function GET() {
       {
         source: 'kostpro',
         read_only: true,
-        properties: Array.isArray(data) ? data : []
+        properties: Array.isArray(data)
+          ? data
+              .map((property: any) => ({
+                ...property,
+                rooms: Array.isArray(property?.rooms)
+                  ? property.rooms.filter((room: any) => String(room?.status || '').toLowerCase() === 'available')
+                  : []
+              }))
+              .filter((property: any) => property.rooms.length > 0)
+          : []
       },
       {
         headers: {
