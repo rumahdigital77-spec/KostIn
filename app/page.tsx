@@ -27,5 +27,5 @@ export default function Home(){
  <section className="section"><div className="sectionHead"><div><span className="eyebrow">KAMAR TERSEDIA</span><h2>Booking tanpa menebak status</h2></div></div>
  <div className="grid">{available.map(({p,r})=><article className="card" key={r.id}><div className="photo">{p.cover_url?<img src={p.cover_url} alt=""/>:<span>🏠</span>}<label>TERSEDIA</label></div><div className="body"><div className="place">{p.city||'Indonesia'}</div><h3>{p.name}</h3><div className="fac">🛏️ {r.name} · {r.room_type||'Kamar'}</div><div className="bottom"><strong>{money(Number(r.price_monthly))}<small>/bulan</small></strong></div><Link className="book" href={'/kost/'+encodeURIComponent(p.id)}>Lihat Detail & Booking</Link></div></article>)}</div>
  {available.length===0&&<div className="empty">Belum ada kamar tersedia untuk pencarian ini.</div>}</section>
- <footer>KostIn © 2026 · KOSTPRO adalah master data. Integrasi hanya READ-ONLY.</footer></main>;
+ <footer>KostIn © 2026</footer></main>;
 }
