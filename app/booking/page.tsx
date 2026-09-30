@@ -1,5 +1,7 @@
 'use client';
 
+// KostIn booking is intentionally public: guests do not need to log in to submit a booking.
+
 import { FormEvent, useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
