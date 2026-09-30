@@ -1,0 +1,1 @@
+Production deploy trigger: only KOSTPRO AVAILABLE rooms are exposed to KostIn.
