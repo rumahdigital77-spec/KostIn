@@ -3,8 +3,8 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-const KOSTPRO_URL = process.env.NEXT_PUBLIC_KOSTPRO_SUPABASE_URL!;
-const KOSTPRO_KEY = process.env.NEXT_PUBLIC_KOSTPRO_SUPABASE_PUBLISHABLE_KEY!;
+const KOSTPRO_URL = process.env.NEXT_PUBLIC_KOSTPRO_SUPABASE_URL || 'https://vynsxajbqkgkudfbraog.supabase.co';
+const KOSTPRO_KEY = process.env.NEXT_PUBLIC_KOSTPRO_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_0_9DNdvMlgPAebzVzk0HZw_iLlbg7GI';
 const supabase = createClient(KOSTPRO_URL, KOSTPRO_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
 
 export default function Booking() {
