@@ -1,0 +1,4 @@
+KostIn production trigger
+Booking form now displays room price sourced from KOSTPRO room selection.
+Booking submission uses the KOSTPRO master RPC directly.
+Timestamp marker: 2026-09-30
