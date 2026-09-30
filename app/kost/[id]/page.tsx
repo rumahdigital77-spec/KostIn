@@ -35,16 +35,26 @@ export default function PropertyDetail(){
   const [reviewBusy,setReviewBusy]=useState(false);
 
   useEffect(()=>{
-    fetch('/api/kostpro/properties',{cache:'no-store'})
-      .then(r=>r.json())
-      .then(d=>{
+    let cancelled=false;
+    const loadLiveProperty=async()=>{
+      try{
+        const r=await fetch('/api/kostpro/properties?t='+Date.now(),{cache:'no-store',headers:{'Cache-Control':'no-cache','Pragma':'no-cache'}});
+        const d=await r.json();
+        if(!r.ok) throw new Error(d.error||'Gagal mengambil data KOSTPRO.');
         const list=Array.isArray(d.properties)?d.properties:[];
         const found=list.find((p:Property)=>String(p.source_property_id||p.id)===String(params.id));
-        if(found) setProperty(found);
-        else setError('Data kost tidak ditemukan atau belum dipublikasikan.');
-      })
-      .catch(()=>setError('Gagal mengambil data kost.'))
-      .finally(()=>setLoading(false));
+        if(!cancelled){
+          if(found) setProperty({...found,rooms:Array.isArray(found.rooms)?found.rooms.filter((room:Room)=>String(room.status||'').toUpperCase()==='AVAILABLE'):[]});
+          else setError('Data kost tidak ditemukan atau belum dipublikasikan.');
+          setLoading(false);
+        }
+      }catch(e){if(!cancelled){setError(e instanceof Error?e.message:'Gagal mengambil data kost.');setLoading(false);}}
+    };
+    loadLiveProperty();
+    const timer=window.setInterval(loadLiveProperty,5000);
+    const onVisible=()=>{if(document.visibilityState==='visible') loadLiveProperty();};
+    document.addEventListener('visibilitychange',onVisible);
+    return()=>{cancelled=true;window.clearInterval(timer);document.removeEventListener('visibilitychange',onVisible);};
   },[params.id]);
 
   const rooms=useMemo(()=>property?.rooms?.filter(r=>String(r.status).toUpperCase()==='AVAILABLE')||[],[property]);
