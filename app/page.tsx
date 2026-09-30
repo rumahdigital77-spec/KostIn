@@ -3,10 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
-type Room = { id: string; name: string; room_type?: string; price_monthly: number; status: string };
-type Property = { id: string; name: string; city?: string; address?: string; cover_url?: string | null; rooms?: Room[] };
-
-const money=(n:number)=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n);
+type Room = { id?: string; source_room_id?: string; name: string; room_type?: string; price_monthly: number; status: string };
+type Property = { id?: string; source_property_id?: string; name: string; city?: string; address?: string; cover_url?: string | null; rooms?: Room[] };
 
 export default function Home(){
  const [properties,setProperties]=useState<Property[]>([]);
@@ -21,15 +19,58 @@ export default function Home(){
      .catch(e=>{setProperties([]);setSource('ERROR');setError(e instanceof Error?e.message:'Gagal membaca data KOSTPRO');});
  },[]);
 
- const filtered=useMemo(()=>properties.filter(p=>(p.name+' '+(p.city||'')+' '+(p.address||'')).toLowerCase().includes(q.toLowerCase())),[properties,q]);
- const available=filtered.flatMap(p=>(p.rooms||[]).filter(r=>String(r.status).toUpperCase()==='AVAILABLE').map(r=>({p,r})));
+ const filtered=useMemo(
+   ()=>properties.filter(p=>(p.name+' '+(p.city||'')+' '+(p.address||'')).toLowerCase().includes(q.toLowerCase())),
+   [properties,q]
+ );
 
- return <main><header><div className="brand"><span className="logo">K</span><div><b>KostIn</b><small>Cari Kost. Pilih Kamar. Langsung Booking.</small></div></div><button className="login">Masuk</button></header>
- <section className="hero"><div><span className="eyebrow">MARKETPLACE KHUSUS KOST</span><h1>Temukan kost yang <em>pas</em> untukmu.</h1><p>Cari kamar yang benar-benar tersedia, lihat detail, lalu booking langsung.</p></div><div className="search"><input value={q} onChange={e=>setQ(e.target.value)} placeholder="📍 Kota, area, atau nama kost"/><button>Cari Kost</button></div></section>
- <section className="stats"><div><b>{properties.length}</b><span>Kost tampil</span></div><div><b>{available.length}</b><span>Kamar tersedia</span></div><div><b>{source}</b><span>Sumber data</span></div></section>
- <section className="section"><div className="sectionHead"><div><span className="eyebrow">KAMAR TERSEDIA</span><h2>Booking tanpa menebak status</h2></div></div>
- <div className="grid">{available.map(({p,r})=><article className="card" key={r.id}><div className="photo">{p.cover_url?<img src={p.cover_url} alt=""/>:<span>🏠</span>}<label>TERSEDIA</label></div><div className="body"><div className="place">{p.city||'Indonesia'}</div><h3>{p.name}</h3><div className="fac">🛏️ {r.name} · {r.room_type||'Kamar'}</div><div className="bottom"><strong>{money(Number(r.price_monthly))}<small>/bulan</small></strong></div><Link className="book" href={'/kost/'+encodeURIComponent(p.id)}>Lihat Detail & Booking</Link></div></article>)}</div>
- {error&&<div className="empty">Data KOSTPRO belum dapat dibaca. {error}</div>}
- {!error&&available.length===0&&<div className="empty">Belum ada kamar tersedia di KOSTPRO untuk pencarian ini.</div>}</section>
- <footer>KostIn © 2026</footer></main>;
+ const propertyHref=(p:Property)=>'/kost/'+encodeURIComponent(String(p.source_property_id||p.id||''));
+
+ return <main>
+  <header>
+   <div className="brand"><span className="logo">K</span><div><b>KostIn</b><small>Cari Kost. Pilih Kamar. Langsung Booking.</small></div></div>
+   <button className="login">Masuk</button>
+  </header>
+
+  <section className="hero">
+   <div><span className="eyebrow">MARKETPLACE KHUSUS KOST</span><h1>Temukan kost yang <em>pas</em> untukmu.</h1><p>Pilih properti terlebih dahulu. Klik properti untuk melihat tipe kamar yang sedang tersedia.</p></div>
+   <div className="search"><input value={q} onChange={e=>setQ(e.target.value)} placeholder="📍 Kota, area, atau nama kost"/><button>Cari Kost</button></div>
+  </section>
+
+  <section className="stats">
+   <div><b>{filtered.length}</b><span>Properti tersedia</span></div>
+   <div><b>{filtered.reduce((n,p)=>n+(p.rooms||[]).filter(r=>String(r.status).toUpperCase()==='AVAILABLE').length,0)}</b><span>Total kamar tersedia</span></div>
+   <div><b>{source}</b><span>Sumber data</span></div>
+  </section>
+
+  <section className="section">
+   <div className="sectionHead">
+    <div><span className="eyebrow">PROPERTI KOST</span><h2>Pilih properti</h2></div>
+   </div>
+
+   <div className="propertyGrid">
+    {filtered.map(p=>{
+      const available=(p.rooms||[]).filter(r=>String(r.status).toUpperCase()==='AVAILABLE').length;
+      return <Link className="propertyCard" href={propertyHref(p)} key={p.source_property_id||p.id||p.name}>
+       <div className="propertyPhoto">
+        {p.cover_url?<img src={p.cover_url} alt={p.name}/>:<span>🏠</span>}
+        <label>{available} KAMAR TERSEDIA</label>
+        <span className="propertyArrow">→</span>
+       </div>
+       <div className="propertyBody">
+        <div className="place">{p.city||'Indonesia'}</div>
+        <h3>{p.name}</h3>
+        <p>{p.address||'Lihat tipe kamar yang tersedia'}</p>
+        <strong>Lihat kamar yang tersedia <span>→</span></strong>
+       </div>
+      </Link>;
+    })}
+   </div>
+
+   {error&&<div className="empty">Data KOSTPRO belum dapat dibaca. {error}</div>}
+   {!error&&filtered.length===0&&<div className="empty">Belum ada properti dengan kamar tersedia untuk pencarian ini.</div>}
+  </section>
+
+  <footer>KostIn © 2026</footer>
+ </main>;
 }
