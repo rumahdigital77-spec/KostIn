@@ -27,11 +27,28 @@ export default function Home(){
  const [userEmail,setUserEmail]=useState('');
 
  useEffect(()=>{
-   fetch('/api/kostpro/properties',{cache:'no-store'})
-     .then(async r=>{const d=await r.json(); if(!r.ok) throw new Error(d.error||'Gagal membaca data KOSTPRO'); return d;})
-     .then(async d=>{const list=Array.isArray(d.properties)?d.properties:[]; const rated=await Promise.all(list.map(async (p:Property)=>{const {data}=await supabase.rpc('get_kostin_property_reviews',{p_source_property_id:String(p.source_property_id||'')});const reviews=Array.isArray(data)?data:[];const avg=reviews.length?reviews.reduce((s:number,r:{rating:number})=>s+Number(r.rating||0),0)/reviews.length:0;return {...p,rating:Number(avg.toFixed(1)),review_count:reviews.length};}));setProperties(rated);setSource(d.source==='kostpro'?'KOSTPRO':'KOSONG');setError('');})
-     .catch(e=>{setProperties([]);setSource('ERROR');setError(e instanceof Error?e.message:'Gagal membaca data KOSTPRO');});
-   supabase.auth.getUser().then(({data})=>setUserEmail(data.user?.email||''));
+   let cancelled=false;
+   const loadLiveRooms=async()=>{
+     try{
+       const response=await fetch('/api/kostpro/properties?t='+Date.now(),{cache:'no-store',headers:{'Cache-Control':'no-cache','Pragma':'no-cache'}});
+       const d=await response.json();
+       if(!response.ok) throw new Error(d.error||'Gagal membaca data KOSTPRO');
+       const list=Array.isArray(d.properties)?d.properties:[];
+       const rated=await Promise.all(list.map(async (p:Property)=>{
+         const {data}=await supabase.rpc('get_kostin_property_reviews',{p_source_property_id:String(p.source_property_id||'')});
+         const reviews=Array.isArray(data)?data:[];
+         const avg=reviews.length?reviews.reduce((s:number,r:{rating:number})=>s+Number(r.rating||0),0)/reviews.length:0;
+         return {...p,rooms:Array.isArray(p.rooms)?p.rooms.filter(r=>String(r.status||'').toUpperCase()==='AVAILABLE'):[],rating:Number(avg.toFixed(1)),review_count:reviews.length};
+       }));
+       if(!cancelled){setProperties(rated);setSource(d.source==='kostpro'?'KOSTPRO':'KOSONG');setError('');}
+     }catch(e){ if(!cancelled){setProperties([]);setSource('ERROR');setError(e instanceof Error?e.message:'Gagal membaca data KOSTPRO');} }
+   };
+   loadLiveRooms();
+   const timer=window.setInterval(loadLiveRooms,5000);
+   const onVisible=()=>{if(document.visibilityState==='visible') loadLiveRooms();};
+   document.addEventListener('visibilitychange',onVisible);
+   supabase.auth.getUser().then(({data})=>{if(!cancelled)setUserEmail(data.user?.email||'');});
+   return()=>{cancelled=true;window.clearInterval(timer);document.removeEventListener('visibilitychange',onVisible);};
  },[]);
 
  const filtered=useMemo(()=>properties.filter(p=>(p.name+' '+(p.city||'')+' '+(p.address||'')).toLowerCase().includes(q.toLowerCase())),[properties,q]);
