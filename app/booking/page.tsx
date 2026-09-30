@@ -82,10 +82,35 @@ export default function Booking() {
         setMessage('Booking belum berhasil dikirim ke KOSTPRO.');
         return;
       }
-      const bookingId = typeof data === 'object' && data ? String((data as Record<string,unknown>).id || (data as Record<string,unknown>).booking_id || '') : '';
-      const { error: paymentSaveError } = await supabase.from('booking_payment_details').insert({ booking_id: bookingId || null, property_id: payload.propertyId, room_id: payload.roomId, guest_name: payload.name, guest_phone: payload.phone, room_price: payload.roomPrice, payment_method: payload.paymentMethod, proof_path: proofPath });
+      const bookingId = typeof data === 'object' && data
+        ? String((data as Record<string,unknown>).id || (data as Record<string,unknown>).booking_id || '')
+        : '';
+      // Never create a payment row without the master booking id: that can
+      // create an orphan payment record disconnected from the KOSTPRO booking.
+      if (!bookingId) {
+        setMessage('Booking berhasil diproses, tetapi ID booking dari KOSTPRO tidak diterima. Data pembayaran tidak dibuat agar tidak tercampur.');
+        return;
+      }
+
+      let paymentSaveError: { message: string } | null = null;
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const result = await supabase.from('booking_payment_details').insert({
+          booking_id: bookingId,
+          property_id: payload.propertyId,
+          room_id: payload.roomId,
+          guest_name: payload.name,
+          guest_phone: payload.phone,
+          room_price: payload.roomPrice,
+          payment_method: payload.paymentMethod,
+          proof_path: proofPath
+        });
+        paymentSaveError = result.error;
+        if (!paymentSaveError) break;
+        if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 350));
+      }
+
       if (paymentSaveError) {
-        setMessage('Booking berhasil dikirim, tetapi data pembayaran belum tersimpan: ' + paymentSaveError.message);
+        setMessage('Booking berhasil dikirim, tetapi data pembayaran belum tersimpan. Silakan cek menu Booking KOSTPRO sebelum mengirim ulang.');
         return;
       }
       setMessage('✓ Booking berhasil dikirim ke KOSTPRO. Harga, metode pembayaran, dan bukti pembayaran sudah tersimpan.');
