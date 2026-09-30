@@ -6,7 +6,8 @@ import { useParams } from 'next/navigation';
 
 type Room = { id?: string; source_room_id?: string; name: string; room_type?: string; price_monthly: number; status: string };
 type Property = {
-  id: string;
+  id?: string;
+  source_property_id?: string;
   name: string;
   city?: string;
   address?: string;
@@ -62,7 +63,7 @@ export default function PropertyDetail(){
       {rooms.length===0?<div className="detailEmpty"><h3>Belum ada kamar tersedia</h3><p>Kamar yang RESERVED, OCCUPIED, MAINTENANCE, atau CLEANING tidak ditampilkan.</p></div>:
       <div className="roomList">{rooms.map(r=><article className="roomRow" key={r.source_room_id||r.id}>
         <div><span className="roomBadge">TERSEDIA</span><h3>{r.name}</h3><p>{r.room_type||'Kamar'} · Status {r.status}</p></div>
-        <div className="roomPrice"><strong>{money(Number(r.price_monthly))}</strong><small>/bulan</small><Link className="book" href={'/booking?propertyId='+encodeURIComponent(property.id)+'&roomId='+encodeURIComponent(String(r.source_room_id||r.id||''))}>Booking Kamar</Link></div>
+        <div className="roomPrice"><strong>{money(Number(r.price_monthly))}</strong><small>/bulan</small><Link className="book" href={'/booking?propertyId='+encodeURIComponent(String(property.source_property_id||property.id||''))+'&roomId='+encodeURIComponent(String(r.source_room_id||r.id||''))}>Booking Kamar</Link></div>
       </article>)}</div>}
     </section>
   </main>;
