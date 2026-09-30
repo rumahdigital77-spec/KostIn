@@ -13,7 +13,16 @@ export default function PartnerDashboard(){
   if(!user){setLoading(false);return;}
   const {data:members}=await supabase.from('property_members').select('property_id,role');
   const ids=(members||[]).map((m:any)=>m.property_id);
-  if(ids.length){ const {data:ps}=await supabase.from('properties').select('*').in('id',ids); setProperties(ps||[]); const {data,error}=await supabase.from('bookings').select('*').in('property_id',ids).order('created_at',{ascending:false}); setBookings(data||[]); if(error)setMessage(error.message); } else {setProperties([]);setBookings([]);} if(error)setMessage(error.message); setLoading(false);
+  if(ids.length){
+   const {data:ps}=await supabase.from('properties').select('*').in('id',ids);
+   setProperties(ps||[]);
+   const {data,error}=await supabase.from('bookings').select('*').in('property_id',ids).order('created_at',{ascending:false});
+   setBookings(data||[]);
+   if(error)setMessage(error.message);
+  } else {
+   setProperties([]);setBookings([]);
+  }
+  setLoading(false);
  }
  useEffect(()=>{load(); const {data}=supabase.auth.onAuthStateChange(()=>load()); return()=>data.subscription.unsubscribe();},[]);
  async function submitAuth(e:React.FormEvent<HTMLFormElement>){
