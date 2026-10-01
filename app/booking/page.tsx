@@ -3,11 +3,6 @@
 // KostIn booking is intentionally public: guests do not need to log in to submit a booking.
 
 import { FormEvent, useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
-
-const KOSTPRO_URL = process.env.NEXT_PUBLIC_KOSTPRO_SUPABASE_URL || 'https://vynsxajbqkgkudfbraog.supabase.co';
-const KOSTPRO_KEY = process.env.NEXT_PUBLIC_KOSTPRO_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_0_9DNdvMlgPAebzVzk0HZw_iLlbg7GI';
-const supabase = createClient(KOSTPRO_URL, KOSTPRO_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
 
 export default function Booking() {
   const [propertyId,setPropertyId]=useState('');
@@ -124,27 +119,6 @@ export default function Booking() {
         : '';
       if (!bookingId) {
         setMessage('KOSTPRO tidak mengembalikan ID booking. Data pembayaran tidak dibuat agar tidak tercampur.');
-        return;
-      }
-      let paymentSaveError: { message: string } | null = null;
-      for (let attempt = 0; attempt < 2; attempt += 1) {
-        const result = await supabase.from('booking_payment_details').insert({
-          booking_id: bookingId,
-          property_id: payload.propertyId,
-          room_id: payload.roomId,
-          guest_name: payload.name,
-          guest_phone: payload.phone,
-          room_price: payload.roomPrice,
-          payment_method: payload.paymentMethod,
-          proof_path: 'BOOKING_KOSTIN',
-        });
-        paymentSaveError = result.error;
-        if (!paymentSaveError) break;
-        if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 350));
-      }
-
-      if (paymentSaveError) {
-        setMessage('Booking berhasil dikirim, tetapi data pembayaran belum tersimpan. Silakan cek menu Booking KOSTPRO sebelum mengirim ulang.');
         return;
       }
       setMessage(`✅ Booking berhasil dikirim ke KOSTPRO. ID booking: ${bookingId}. Data kamar, harga, dan metode pembayaran sudah tersimpan.`);
