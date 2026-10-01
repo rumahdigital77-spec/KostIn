@@ -3,11 +3,26 @@ import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
-const KOSTPRO_URL = 'https://vynsxajbqkgkudfbraog.supabase.co';
-const KOSTPRO_KEY = 'sb_publishable_0_9DNdvMlgPAebzVzk0HZw_iLlbg7GI';
+const KOSTPRO_URL =
+  process.env.KOSTPRO_SUPABASE_URL ||
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  '';
+
+const KOSTPRO_KEY =
+  process.env.KOSTPRO_SUPABASE_PUBLISHABLE_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+  '';
 
 export async function POST(request: Request) {
   try {
+    if (!KOSTPRO_URL || !KOSTPRO_KEY) {
+      console.error('[KostIn] Missing KOSTPRO Supabase environment variables');
+      return NextResponse.json(
+        { success: false, error: 'Konfigurasi koneksi KOSTPRO belum tersedia di server.' },
+        { status: 500 }
+      );
+    }
+
     const body = await request.json();
     const propertyId = String(body.propertyId || '').trim();
     const roomId = String(body.roomId || '').trim();
@@ -16,8 +31,20 @@ export async function POST(request: Request) {
     const checkIn = String(body.checkIn || '').trim();
     const duration = Number(body.duration || 0);
 
-    if (!propertyId || !roomId || !name || !phone || !checkIn || !Number.isInteger(duration) || duration < 1 || duration > 120) {
-      return NextResponse.json({ success: false, error: 'Data booking belum lengkap.' }, { status: 400 });
+    if (
+      !propertyId ||
+      !roomId ||
+      !name ||
+      !phone ||
+      !checkIn ||
+      !Number.isInteger(duration) ||
+      duration < 1 ||
+      duration > 120
+    ) {
+      return NextResponse.json(
+        { success: false, error: 'Data booking belum lengkap.' },
+        { status: 400 }
+      );
     }
 
     const kms = createClient(KOSTPRO_URL, KOSTPRO_KEY, {
@@ -34,16 +61,30 @@ export async function POST(request: Request) {
     });
 
     if (error) {
-      return NextResponse.json({
-        success: false,
-        error: error.message || 'Booking ditolak oleh KOSTPRO.'
-      }, { status: 409 });
+      console.error('[KostIn] booking RPC failed:', error);
+      return NextResponse.json(
+        {
+          success: false,
+          error: error.message || 'Booking ditolak oleh KOSTPRO.'
+        },
+        { status: 409 }
+      );
     }
 
-    return NextResponse.json({ success: true, booking: data }, {
-      headers: { 'Cache-Control': 'no-store, max-age=0' }
-    });
-  } catch {
-    return NextResponse.json({ success: false, error: 'Server booking KostIn tidak dapat memproses permintaan.' }, { status: 500 });
+    return NextResponse.json(
+      { success: true, booking: data },
+      {
+        headers: { 'Cache-Control': 'no-store, max-age=0' }
+      }
+    );
+  } catch (error) {
+    console.error('[KostIn] booking server error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Server booking KostIn tidak dapat memproses permintaan.'
+      },
+      { status: 500 }
+    );
   }
 }
