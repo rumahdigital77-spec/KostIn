@@ -6,16 +6,27 @@ export const dynamic = 'force-dynamic';
 const SUPABASE_URL =
   process.env.KOSTPRO_SUPABASE_URL ||
   process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  'https://vynsxajbqkgkudfbraog.supabase.co';
+  '';
 
 const SUPABASE_PUBLISHABLE_KEY =
   process.env.KOSTPRO_SUPABASE_PUBLISHABLE_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  'sb_publishable_0_9DNdvMlgPAebzVzk0HZw_iLlbg7GI';
+  '';
 
 export async function GET() {
   try {
+    if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+      console.error('[KostIn] Missing KOSTPRO Supabase environment variables');
+      return NextResponse.json(
+        {
+          source: 'kostpro',
+          properties: [],
+          error: 'Konfigurasi koneksi KOSTPRO belum tersedia di server.'
+        },
+        { status: 500 }
+      );
+    }
+
     const client = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
       auth: { autoRefreshToken: false, persistSession: false }
     });
