@@ -94,6 +94,7 @@ export default function Booking() {
         paymentMethod:String(form.get('paymentMethod')||'TRANSFER_BANK')
       };
 
+      setMessage('⏳ Mengirim data booking ke KOSTPRO…');
       if (roomStatus !== 'AVAILABLE') {
         setMessage(roomStatus === 'UNAVAILABLE' ? 'Kamar sudah tidak tersedia di KOSTPRO. Silakan pilih kamar lain.' : 'Status kamar KOSTPRO belum tersedia. Silakan coba lagi.');
         return;
@@ -147,10 +148,10 @@ export default function Booking() {
         setMessage('Booking berhasil dikirim, tetapi data pembayaran belum tersimpan. Silakan cek menu Booking KOSTPRO sebelum mengirim ulang.');
         return;
       }
-      setMessage('✓ Booking berhasil dikirim ke KOSTPRO. Harga, metode pembayaran, dan bukti pembayaran sudah tersimpan.');
+      setMessage(`✅ Booking berhasil dikirim ke KOSTPRO. ID booking: ${bookingId}. Data kamar, harga, dan metode pembayaran sudah tersimpan.`);
       e.currentTarget.reset();
     } catch (error) {
-      setMessage('Koneksi ke KOSTPRO terputus atau permintaan terlalu lama. Silakan coba lagi.');
+      setMessage('❌ Booking gagal dikirim ke KOSTPRO. Periksa koneksi dan status kamar, lalu coba lagi.');
     } finally {
       setBusy(false);
     }
