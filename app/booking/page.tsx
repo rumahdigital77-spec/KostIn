@@ -107,7 +107,7 @@ export default function Booking() {
         setMessage('Mohon lengkapi data booking dan pastikan harga kamar tersedia.');
         return;
       }
-      const { data, error } = await supabase.rpc('create_pending_booking', {
+      const { data, error } = await supabase.rpc('create_kostin_booking_in_kostpro', {
         p_property_id: payload.propertyId,
         p_room_id: payload.roomId,
         p_guest_name: payload.name,
@@ -138,6 +138,7 @@ export default function Booking() {
           guest_phone: payload.phone,
           room_price: payload.roomPrice,
           payment_method: payload.paymentMethod,
+          proof_path: 'BOOKING_KOSTIN',
         });
         paymentSaveError = result.error;
         if (!paymentSaveError) break;
