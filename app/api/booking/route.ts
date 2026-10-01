@@ -6,12 +6,12 @@ export const dynamic = 'force-dynamic';
 const KOSTPRO_URL =
   process.env.KOSTPRO_SUPABASE_URL ||
   process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  '';
+  'https://vynsxajbqkgkudfbraog.supabase.co';
 
 const KOSTPRO_KEY =
   process.env.KOSTPRO_SUPABASE_PUBLISHABLE_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-  '';
+  'sb_publishable_0_9DNdvMlgPAebzVzk0HZw_iLlbg7GI';
 
 export async function POST(request: Request) {
   try {
