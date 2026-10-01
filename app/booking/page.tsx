@@ -2,7 +2,7 @@
 
 // KostIn booking is intentionally public: guests do not need to log in to submit a booking.
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 
 export default function Booking() {
   const [propertyId,setPropertyId]=useState('');
@@ -16,6 +16,7 @@ export default function Booking() {
   const [paymentMethod,setPaymentMethod]=useState('TRANSFER_BANK');
   const [message,setMessage]=useState('');
   const [busy,setBusy]=useState(false);
+  const submitLock=useRef(false);
 
   useEffect(()=>{
     const p=new URLSearchParams(window.location.search);
@@ -59,7 +60,7 @@ export default function Booking() {
         setRoomType(String(room.room_type || 'Kamar'));
         setRoomStatus('AVAILABLE');
         setPrice(Math.max(0,Number(room.price_monthly)||0));
-        setMessage('');
+        if (!submitLock.current) setMessage('');
       }catch(err){
         if(!cancelled){setRoomStatus('ERROR');setPrice(0);setMessage('Status kamar KOSTPRO belum dapat dibaca. Booking dihentikan agar data tidak salah.');}
       }
@@ -73,9 +74,12 @@ export default function Booking() {
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (submitLock.current) return;
+    submitLock.current=true;
+    const formElement=e.currentTarget;
+    const form=new FormData(formElement);
     setBusy(true);
     setMessage('');
-    const form=new FormData(e.currentTarget);
 
     try {
       const payload={
@@ -114,19 +118,21 @@ export default function Booking() {
         return;
       }
       const data = result.booking;
-      const bookingId = typeof data === 'object' && data
-        ? String((data as Record<string,unknown>).id || (data as Record<string,unknown>).booking_id || '')
-        : '';
+      const row = Array.isArray(data) ? data[0] : data;
+      const bookingId = typeof row === 'object' && row
+        ? String((row as Record<string,unknown>).id || (row as Record<string,unknown>).booking_id || result.bookingId || '')
+        : String(result.bookingId || '');
       if (!bookingId) {
         setMessage('KOSTPRO tidak mengembalikan ID booking. Data pembayaran tidak dibuat agar tidak tercampur.');
         return;
       }
       setMessage(`✅ Booking berhasil dikirim ke KOSTPRO. ID booking: ${bookingId}. Data kamar, harga, dan metode pembayaran sudah tersimpan.`);
-      e.currentTarget.reset();
+      formElement.reset();
     } catch (error) {
       setMessage('❌ Booking gagal dikirim ke KOSTPRO. Periksa koneksi dan status kamar, lalu coba lagi.');
     } finally {
       setBusy(false);
+      submitLock.current=false;
     }
   }
 
