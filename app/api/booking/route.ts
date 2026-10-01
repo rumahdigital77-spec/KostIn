@@ -30,6 +30,8 @@ export async function POST(request: Request) {
     const phone = String(body.phone || '').trim();
     const checkIn = String(body.checkIn || '').trim();
     const duration = Number(body.duration || 0);
+    const roomPrice = Number(body.roomPrice || 0);
+    const paymentMethod = String(body.paymentMethod || 'TRANSFER_BANK').trim();
 
     if (
       !propertyId ||
@@ -39,7 +41,10 @@ export async function POST(request: Request) {
       !checkIn ||
       !Number.isInteger(duration) ||
       duration < 1 ||
-      duration > 120
+      duration > 120 ||
+      !Number.isFinite(roomPrice) ||
+      roomPrice <= 0 ||
+      !paymentMethod
     ) {
       return NextResponse.json(
         { success: false, error: 'Data booking belum lengkap.' },
@@ -71,8 +76,38 @@ export async function POST(request: Request) {
       );
     }
 
+    const bookingId = data && typeof data === 'object'
+      ? String((data as Record<string, unknown>).id || (data as Record<string, unknown>).booking_id || '')
+      : '';
+    if (!bookingId) {
+      console.error('[KostIn] booking RPC returned no booking id');
+      return NextResponse.json(
+        { success: false, error: 'KOSTPRO tidak mengembalikan ID booking.' },
+        { status: 502 }
+      );
+    }
+
+    const { error: paymentError } = await kms.from('booking_payment_details').insert({
+      booking_id: bookingId,
+      property_id: propertyId,
+      room_id: roomId,
+      guest_name: name,
+      guest_phone: phone,
+      room_price: roomPrice,
+      payment_method: paymentMethod,
+      proof_path: 'BOOKING_KOSTIN',
+    });
+    if (paymentError) {
+      console.error('[KostIn] payment detail save failed:', paymentError);
+      return NextResponse.json(
+        { success: false, error: 'Booking berhasil dibuat, tetapi detail pembayaran belum tersimpan. Jangan kirim ulang sebelum diperiksa di KOSTPRO.', booking: data, bookingId },
+        { status: 502 }
+      );
+    }
+
+    console.log('[KostIn] booking bridge success', { bookingId, propertyId, roomId });
     return NextResponse.json(
-      { success: true, booking: data },
+      { success: true, booking: data, bookingId },
       {
         headers: { 'Cache-Control': 'no-store, max-age=0' }
       }
