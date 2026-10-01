@@ -42,8 +42,10 @@ export default function Booking() {
           setPrice(0);
           return;
         }
-        const canonicalPropertyId = String(property?.id || '');
-        const canonicalRoomId = String(room?.id || '');
+        // KOSTPRO public feed exposes the master/source IDs. Those are the
+        // canonical IDs accepted by the KOSTPRO booking RPC.
+        const canonicalPropertyId = String(property?.source_property_id || property?.id || '');
+        const canonicalRoomId = String(room?.source_room_id || room?.id || '');
         if (!canonicalPropertyId || !canonicalRoomId) {
           setRoomStatus('ERROR');
           setPrice(0);
