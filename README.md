@@ -30,4 +30,4 @@ KostIn menggunakan Supabase project terpisah. Tabel utama:
 
 RLS aktif. Booking publik hanya boleh membuat status `PENDING` dan hanya jika kamar masih `AVAILABLE` serta property/room cocok.
 
-Deployment trigger: verify KostIn production deployment.
+Deployment trigger: production deployment verification.
