@@ -32,3 +32,20 @@ body{background:#070706;color:#f7f3ea;font-family:Arial,Helvetica,sans-serif}
 .trustStrip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin:10px 5vw 55px;background:#302b22;border:1px solid #302b22;border-radius:22px;overflow:hidden}.trustStrip div{padding:28px;background:#0f0f0d}.trustStrip span{display:block;color:#cba75c;font-size:11px;letter-spacing:2px;margin-bottom:12px}.trustStrip b{display:block;font-size:16px}.trustStrip small{display:block;color:#777168;font-size:11px;line-height:1.5;margin-top:8px}
 @media(max-width:850px){.mainNav{display:none}.premiumHero{min-height:auto;padding:65px 18px 40px}.premiumHero h1{letter-spacing:-2px}.propertyGrid{grid-template-columns:repeat(2,1fr)}.trustStrip{grid-template-columns:1fr;margin:10px 18px 35px}}
 @media(max-width:560px){.propertyGrid{grid-template-columns:1fr}.premiumHero h1{font-size:46px}.siteHeader{padding:0 18px}.premiumStats{margin:0 18px}.stats{grid-template-columns:1fr}.stats div{border-right:0;border-bottom:1px solid #25231f}.trustStrip div{padding:22px}}
+
+
+/* KOSTIN LUXURY SYSTEM V2 — visual language aligned with KOSTPRO */
+:root{--kp-gold:#d9b765;--kp-gold2:#9f7730;--kp-ink:#070706;--kp-panel:#10100e;--kp-line:rgba(217,183,101,.16);--kp-muted:#979188}
+body{background:var(--kp-ink);letter-spacing:.01em}
+.siteHeader{box-shadow:0 10px 40px rgba(0,0,0,.28)}
+.brand .logo{box-shadow:0 8px 24px rgba(190,145,49,.22),inset 0 1px 0 rgba(255,255,255,.35)}
+.premiumHero{isolation:isolate}
+.premiumHero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px);background-size:72px 72px;mask-image:linear-gradient(to bottom,black,transparent 85%);pointer-events:none}
+.premiumHero h1 em{background:linear-gradient(110deg,#f0d58f,#b98b3b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.propertyCard,.roomRow,.bookingCard,.dashCard,.reviewCard{box-shadow:0 18px 55px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.025)}
+.propertyCard:hover{box-shadow:0 22px 65px rgba(0,0,0,.42),0 0 0 1px rgba(217,183,101,.12)}
+.propertyPhoto:after,.detailPhoto:after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent 30%,rgba(0,0,0,.22));pointer-events:none}
+.book,.search button,.authSubmit,.reviewSubmit{box-shadow:0 10px 28px rgba(180,133,45,.2);transition:transform .18s,filter .18s,box-shadow .18s}
+.book:hover,.search button:hover,.authSubmit:hover,.reviewSubmit:hover{transform:translateY(-2px);filter:brightness(1.06);box-shadow:0 14px 34px rgba(180,133,45,.28)}
+.stats b,.propertyBody strong,.bottom strong,.roomPrice strong{background:linear-gradient(110deg,#f0d58f,#b98b3b);-webkit-background-clip:text;background-clip:text;color:transparent}
+@media(max-width:560px){.premiumHero:after{width:300px;height:300px;right:-30%;top:18%}.propertyPhoto{height:205px}.propertyBody h3{font-size:20px}.search{flex-direction:column}.search button{padding:13px}}
