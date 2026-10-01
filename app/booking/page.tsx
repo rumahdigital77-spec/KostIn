@@ -107,20 +107,18 @@ export default function Booking() {
         setMessage('Mohon lengkapi data booking dan pastikan harga kamar tersedia.');
         return;
       }
-      const { data, error } = await supabase.rpc('create_kostin_booking_in_kostpro', {
-        p_property_id: payload.propertyId,
-        p_room_id: payload.roomId,
-        p_guest_name: payload.name,
-        p_guest_phone: payload.phone,
-        p_check_in: payload.checkIn,
-        p_duration_months: payload.duration
+      const response = await fetch('/api/booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+        body: JSON.stringify(payload),
       });
-
-      if(error){
-        const detail=error.message||'Booking ditolak oleh KOSTPRO.';
-        setMessage(detail.includes('Kamar sudah tidak tersedia') ? 'Kamar sudah tidak tersedia. Silakan pilih kamar lain.' : detail.includes('Tanggal check-in') ? detail : detail.includes('Data booking') ? 'Mohon lengkapi semua data booking.' : 'Booking belum dapat dikirim ke KOSTPRO. Silakan coba lagi.');
+      const result = await response.json().catch(() => ({}));
+      if(!response.ok || !result.success){
+        const detail=String(result.error||'Booking ditolak oleh KOSTPRO.');
+        setMessage(detail.includes('Kamar sudah tidak tersedia') ? 'Kamar sudah tidak tersedia. Silakan pilih kamar lain.' : detail.includes('Tanggal check-in') ? detail : detail.includes('Data booking') ? 'Mohon lengkapi semua data booking.' : detail.includes('Konfigurasi koneksi') ? 'Koneksi ke master KOSTPRO belum tersedia. Silakan coba lagi.' : 'Booking belum dapat dikirim ke KOSTPRO. Silakan coba lagi.');
         return;
       }
+      const data = result.booking;
       const bookingId = typeof data === 'object' && data
         ? String((data as Record<string,unknown>).id || (data as Record<string,unknown>).booking_id || '')
         : '';
