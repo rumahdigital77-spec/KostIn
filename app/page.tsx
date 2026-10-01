@@ -44,7 +44,7 @@ export default function Home(){
      }catch(e){ if(!cancelled){setProperties([]);setSource('ERROR');setError(e instanceof Error?e.message:'Gagal membaca data KOSTPRO');} }
    };
    loadLiveRooms();
-   const timer=window.setInterval(loadLiveRooms,5000);
+   const timer=window.setInterval(loadLiveRooms,1000);
    const onVisible=()=>{if(document.visibilityState==='visible') loadLiveRooms();};
    document.addEventListener('visibilitychange',onVisible);
    supabase.auth.getUser().then(({data})=>{if(!cancelled)setUserEmail(data.user?.email||'');});
@@ -74,8 +74,9 @@ export default function Home(){
  async function logout(){await supabase.auth.signOut();setUserEmail('');}
 
  return <main>
-  <header>
-   <div className="brand"><span className="logo">K</span><div><b>KostIn</b><small>Cari Kost. Pilih Kamar. Langsung Booking.</small></div></div>
+  <header className="siteHeader">
+   <div className="brand"><span className="logo">K</span><div><b>Kost<span>In</span></b><small>LIVE KOST MARKETPLACE</small></div></div>
+   <nav className="mainNav"><Link href="/">Cari Kost</Link><a href="#properti">Properti</a><a href="#cara">Cara Booking</a></nav>
    <div className="authActions">
     {userEmail?<><span className="userEmail">{userEmail}</span><button className="authIconBtn logoutIcon" aria-label="Sign out" title="Sign out" onClick={logout}>⇥</button></>:<>
       <button className="authIconBtn" aria-label="Sign in" title="Sign in" onClick={()=>{setAuthMode('signin');setAuthMessage('');setAuthOpen(true)}}>↪</button>
@@ -104,16 +105,16 @@ export default function Home(){
    </section>
   </div>}
 
-  <section className="hero">
+  <section className="hero premiumHero">
    <div><span className="eyebrow">MARKETPLACE KHUSUS KOST</span><h1>Temukan kost yang <em>pas</em> untukmu.</h1><p>Pilih properti terlebih dahulu. Klik properti untuk melihat tipe kamar yang sedang tersedia.</p></div>
    <div className="search"><input value={q} onChange={e=>setQ(e.target.value)} placeholder="📍 Kota, area, atau nama kost"/><button>Cari Kost</button></div>
   </section>
-  <section className="stats">
+  <section className="stats premiumStats">
    <div><b>{filtered.length}</b><span>Properti tersedia</span></div>
    <div><b>{filtered.reduce((n,p)=>n+(p.rooms||[]).filter(r=>String(r.status).toUpperCase()==='AVAILABLE').length,0)}</b><span>Total kamar tersedia</span></div>
    <div><b>{source}</b><span>Sumber data</span></div>
   </section>
-  <section className="section">
+  <section className="section" id="properti">
    <div className="sectionHead"><div><span className="eyebrow">PROPERTI KOST</span><h2>Pilih properti</h2></div></div>
    <div className="propertyGrid">
     {filtered.map(p=>{const available=(p.rooms||[]).filter(r=>String(r.status).toUpperCase()==='AVAILABLE').length; return <Link className="propertyCard" href={propertyHref(p)} key={p.source_property_id||p.id||p.name}>
@@ -124,6 +125,6 @@ export default function Home(){
    {error&&<div className="empty">Data KOSTPRO belum dapat dibaca. {error}</div>}
    {!error&&filtered.length===0&&<div className="empty">Belum ada properti dengan kamar tersedia untuk pencarian ini.</div>}
   </section>
-  <footer>KostIn © 2026</footer>
+  <section className="trustStrip" id="cara"><div><span>01</span><b>Pilih properti</b><small>Lihat kamar yang tersedia secara live.</small></div><div><span>02</span><b>Pilih kamar</b><small>Harga mengikuti master KOSTPRO.</small></div><div><span>03</span><b>Booking</b><small>Kirim data langsung ke property.</small></div></section><footer>KostIn © 2026 · Live inventory by KOSTPRO</footer>
  </main>;
 }
