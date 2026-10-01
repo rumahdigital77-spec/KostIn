@@ -3,15 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
-const KOSTPRO_URL =
-  process.env.KOSTPRO_SUPABASE_URL ||
-  process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  'https://vynsxajbqkgkudfbraog.supabase.co';
-
-const KOSTPRO_KEY =
-  process.env.KOSTPRO_SUPABASE_PUBLISHABLE_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-  'sb_publishable_0_9DNdvMlgPAebzVzk0HZw_iLlbg7GI';
+// IMPORTANT: KostIn has its own Supabase project. Booking writes must NEVER
+// fall back to KostIn's NEXT_PUBLIC_SUPABASE_* variables.
+// The master/source of truth for inventory and bookings is KOSTPRO.
+const KOSTPRO_URL = 'https://vynsxajbqkgkudfbraog.supabase.co';
+const KOSTPRO_KEY = 'sb_publishable_0_9DNdvMlgPAebzVzk0HZw_iLlbg7GI';
 
 export async function POST(request: Request) {
   try {
