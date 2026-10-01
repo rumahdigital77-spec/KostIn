@@ -5,10 +5,11 @@ export const dynamic = 'force-dynamic';
 
 const KMS_SUPABASE_URL = 'https://vynsxajbqkgkudfbraog.supabase.co';
 const KMS_PUBLISHABLE_KEY = 'sb_publishable_0_9DNdvMlgPAebzVzk0HZw_iLlbg7GI';
+const KMS_SERVER_KEY = process.env.KOSTPRO_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || KMS_PUBLISHABLE_KEY;
 
 export async function GET() {
   try {
-    const kms = createClient(KMS_SUPABASE_URL, KMS_PUBLISHABLE_KEY, {
+    const kms = createClient(KMS_SUPABASE_URL, KMS_SERVER_KEY, {
       auth: { autoRefreshToken: false, persistSession: false }
     });
 
