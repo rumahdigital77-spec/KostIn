@@ -12,6 +12,8 @@ const supabase = createClient(KOSTPRO_URL, KOSTPRO_KEY, { auth: { autoRefreshTok
 export default function Booking() {
   const [propertyId,setPropertyId]=useState('');
   const [roomId,setRoomId]=useState('');
+  const [rpcPropertyId,setRpcPropertyId]=useState('');
+  const [rpcRoomId,setRpcRoomId]=useState('');
   const [price,setPrice]=useState(0);
   const [roomStatus,setRoomStatus]=useState('LOADING');
   const [paymentMethod,setPaymentMethod]=useState('TRANSFER_BANK');
@@ -40,6 +42,11 @@ export default function Booking() {
           setPrice(0);
           return;
         }
+        const canonicalPropertyId = String(property?.id || '');
+        const canonicalRoomId = String(room?.id || '');
+        if (!canonicalPropertyId || !canonicalRoomId) throw new Error('KOSTPRO tidak mengembalikan ID internal property/kamar.');
+        setRpcPropertyId(canonicalPropertyId);
+        setRpcRoomId(canonicalRoomId);
         setRoomStatus('AVAILABLE');
         setPrice(Math.max(0,Number(room.price_monthly)||0));
         setMessage('');
@@ -62,8 +69,8 @@ export default function Booking() {
 
     try {
       const payload={
-        propertyId,
-        roomId,
+        propertyId: rpcPropertyId,
+        roomId: rpcRoomId,
         name:String(form.get('name')||'').trim(),
         phone:String(form.get('phone')||'').trim(),
         checkIn:String(form.get('checkIn')||'').trim(),
@@ -74,6 +81,10 @@ export default function Booking() {
 
       if (roomStatus !== 'AVAILABLE') {
         setMessage(roomStatus === 'UNAVAILABLE' ? 'Kamar sudah tidak tersedia di KOSTPRO. Silakan pilih kamar lain.' : 'Status kamar KOSTPRO belum tersedia. Silakan coba lagi.');
+        return;
+      }
+      if (!payload.propertyId || !payload.roomId) {
+        setMessage('Data internal kamar KOSTPRO belum siap. Silakan tunggu status kamar termuat lalu coba lagi.');
         return;
       }
       if (!payload.name || !payload.phone || !payload.checkIn || !payload.roomPrice) {
