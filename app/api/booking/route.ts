@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     const phone = String(body.phone || '').trim();
     const checkIn = String(body.checkIn || '').trim();
     const duration = Number(body.duration || 0);
-    const roomPrice = Number(body.roomPrice || 0);
+    const roomPrice = Number(body.roomPrice || 0); // legacy client field; never used as master price
     const paymentMethod = String(body.paymentMethod || 'TRANSFER_BANK').trim();
 
     if (
@@ -38,8 +38,6 @@ export async function POST(request: Request) {
       !Number.isInteger(duration) ||
       duration < 1 ||
       duration > 120 ||
-      !Number.isFinite(roomPrice) ||
-      roomPrice <= 0 ||
       !paymentMethod
     ) {
       return NextResponse.json(
@@ -52,13 +50,14 @@ export async function POST(request: Request) {
       auth: { autoRefreshToken: false, persistSession: false }
     });
 
-    const { data, error } = await kms.rpc('create_kostin_booking_in_kostpro', {
+    const { data, error } = await kms.rpc('create_kostin_booking_in_kostpro_v2', {
       p_property_id: propertyId,
       p_room_id: roomId,
       p_guest_name: name,
       p_guest_phone: phone,
       p_check_in: checkIn,
-      p_duration_months: duration
+      p_duration_months: duration,
+      p_payment_method: paymentMethod
     });
 
     if (error) {
@@ -79,24 +78,6 @@ export async function POST(request: Request) {
       console.error('[KostIn] booking RPC returned no booking id');
       return NextResponse.json(
         { success: false, error: 'KOSTPRO tidak mengembalikan ID booking.' },
-        { status: 502 }
-      );
-    }
-
-    const { error: paymentError } = await kms.from('booking_payment_details').insert({
-      booking_id: bookingId,
-      property_id: propertyId,
-      room_id: roomId,
-      guest_name: name,
-      guest_phone: phone,
-      room_price: Number((data as Record<string, unknown>).room_price || roomPrice),
-      payment_method: paymentMethod,
-      proof_path: 'BOOKING_KOSTIN',
-    });
-    if (paymentError) {
-      console.error('[KostIn] payment detail save failed:', paymentError);
-      return NextResponse.json(
-        { success: false, error: 'Booking berhasil dibuat, tetapi detail pembayaran belum tersimpan. Jangan kirim ulang sebelum diperiksa di KOSTPRO.', booking: data, bookingId },
         { status: 502 }
       );
     }
