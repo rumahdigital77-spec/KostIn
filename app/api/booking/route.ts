@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     }
 
     const bookingId = data && typeof data === 'object'
-      ? String((data as Record<string, unknown>).id || (data as Record<string, unknown>).booking_id || '')
+      ? String((data as Record<string, unknown>).booking_id || (data as Record<string, unknown>).id || '')
       : '';
     if (!bookingId) {
       console.error('[KostIn] booking RPC returned no booking id');
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
       room_id: roomId,
       guest_name: name,
       guest_phone: phone,
-      room_price: roomPrice,
+      room_price: Number((data as Record<string, unknown>).room_price || roomPrice),
       payment_method: paymentMethod,
       proof_path: 'BOOKING_KOSTIN',
     });
