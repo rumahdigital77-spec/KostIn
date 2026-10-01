@@ -13,6 +13,7 @@ export default function Booking() {
   const [propertyId,setPropertyId]=useState('');
   const [roomId,setRoomId]=useState('');
   const [price,setPrice]=useState(0);
+  const [roomStatus,setRoomStatus]=useState('LOADING');
   const [paymentMethod,setPaymentMethod]=useState('TRANSFER_BANK');
   const [message,setMessage]=useState('');
   const [busy,setBusy]=useState(false);
@@ -21,8 +22,37 @@ export default function Booking() {
     const p=new URLSearchParams(window.location.search);
     setPropertyId(p.get('propertyId')||'');
     setRoomId(p.get('roomId')||'');
-    setPrice(Math.max(0, Number(p.get('price')||0)));
   },[]);
+
+  useEffect(()=>{
+    let cancelled=false;
+    const loadLiveRoom=async()=>{
+      if(!propertyId || !roomId) return;
+      try{
+        const response=await fetch('/api/kostpro/properties?t='+Date.now(),{cache:'no-store',headers:{'Cache-Control':'no-cache','Pragma':'no-cache'}});
+        const d=await response.json();
+        if(!response.ok) throw new Error(d.error||'Gagal membaca status kamar KOSTPRO.');
+        const property=(Array.isArray(d.properties)?d.properties:[]).find((p:any)=>String(p.source_property_id||p.id)===String(propertyId));
+        const room=(Array.isArray(property?.rooms)?property.rooms:[]).find((r:any)=>String(r.source_room_id||r.id)===String(roomId));
+        if(cancelled) return;
+        if(!room || String(room.status||'').toUpperCase()!=='AVAILABLE'){
+          setRoomStatus('UNAVAILABLE');
+          setPrice(0);
+          return;
+        }
+        setRoomStatus('AVAILABLE');
+        setPrice(Math.max(0,Number(room.price_monthly)||0));
+        setMessage('');
+      }catch(err){
+        if(!cancelled){setRoomStatus('ERROR');setPrice(0);setMessage('Status kamar KOSTPRO belum dapat dibaca. Booking dihentikan agar data tidak salah.');}
+      }
+    };
+    loadLiveRoom();
+    const timer=window.setInterval(loadLiveRoom,5000);
+    const onVisible=()=>{if(document.visibilityState==='visible') loadLiveRoom();};
+    document.addEventListener('visibilitychange',onVisible);
+    return()=>{cancelled=true;window.clearInterval(timer);document.removeEventListener('visibilitychange',onVisible);};
+  },[propertyId,roomId]);
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -42,6 +72,10 @@ export default function Booking() {
         paymentMethod:String(form.get('paymentMethod')||'TRANSFER_BANK')
       };
 
+      if (roomStatus !== 'AVAILABLE') {
+        setMessage(roomStatus === 'UNAVAILABLE' ? 'Kamar sudah tidak tersedia di KOSTPRO. Silakan pilih kamar lain.' : 'Status kamar KOSTPRO belum tersedia. Silakan coba lagi.');
+        return;
+      }
       if (!payload.name || !payload.phone || !payload.checkIn || !payload.roomPrice) {
         setMessage('Mohon lengkapi data booking dan pastikan harga kamar tersedia.');
         return;
@@ -67,13 +101,6 @@ export default function Booking() {
         setMessage('KOSTPRO tidak mengembalikan ID booking. Data pembayaran tidak dibuat agar tidak tercampur.');
         return;
       }
-      // Never create a payment row without the master booking id: that can
-      // create an orphan payment record disconnected from the KOSTPRO booking.
-      if (!bookingId) {
-        setMessage('Booking berhasil diproses, tetapi ID booking dari KOSTPRO tidak diterima. Data pembayaran tidak dibuat agar tidak tercampur.');
-        return;
-      }
-
       let paymentSaveError: { message: string } | null = null;
       for (let attempt = 0; attempt < 2; attempt += 1) {
         const result = await supabase.from('booking_payment_details').insert({
@@ -109,7 +136,7 @@ export default function Booking() {
       <span className="eyebrow">BOOKING KAMAR</span>
       <h1>Amankan kamar pilihanmu.</h1>
       <p>Data booking dikirim langsung ke master KOSTPRO. Data property lain tidak dicampur.</p>
-      <div className="notice"><strong>Harga kamar: {new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(price)}</strong><br/><small>Harga per bulan, mengikuti harga kamar yang dipublikasikan dari KOSTPRO.</small></div>
+      <div className="notice"><strong>Harga kamar: {roomStatus==='AVAILABLE' ? new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(price) : 'Memuat dari KOSTPRO…'}</strong><br/><small>Status dan harga kamar dibaca live dari Room Status KOSTPRO. Harga dari URL/client tidak digunakan.</small></div>
       {!propertyId||!roomId
         ? <div className="notice">Kamar belum dipilih. Silakan kembali ke daftar kamar tersedia.</div>
         : <form onSubmit={submit}>
@@ -119,7 +146,7 @@ export default function Booking() {
             <label>Durasi<select name="duration" defaultValue="1"><option value="1">1 bulan</option><option value="3">3 bulan</option><option value="6">6 bulan</option><option value="12">12 bulan</option></select></label>
             <label>Harga kamar / bulan<input value={new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(price)} readOnly/></label>
             <label>Metode pembayaran<select name="paymentMethod" value={paymentMethod} onChange={e=>setPaymentMethod(e.target.value)}><option value="TRANSFER_BANK">Transfer Bank</option><option value="QRIS">QRIS</option><option value="E-WALLET">E-Wallet</option><option value="CASH">Tunai</option></select></label>
-            <button disabled={busy} type="submit">{busy?'Mengirim ke KOSTPRO…':'Kirim Booking'}</button>
+            <button disabled={busy||roomStatus!=='AVAILABLE'} type="submit">{busy?'Mengirim ke KOSTPRO…':'Kirim Booking'}</button>
             {message&&<div className="notice">{message}</div>}
           </form>}
     </div>
