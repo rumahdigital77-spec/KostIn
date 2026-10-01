@@ -1,67 +1,67 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
-const KMS_SUPABASE_URL = 'https://vynsxajbqkgkudfbraog.supabase.co';
-const KMS_PUBLISHABLE_KEY = 'sb_publishable_0_9DNdvMlgPAebzVzk0HZw_iLlbg7GI';
-const KMS_SERVER_KEY = process.env.KOSTPRO_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || KMS_PUBLISHABLE_KEY;
+const KOSTPRO_READ_API_URL =
+  process.env.KOSTPRO_READ_API_URL ||
+  'https://kostpro.vercel.app/api/kostin/properties';
 
 export async function GET() {
   try {
-    const kms = createClient(KMS_SUPABASE_URL, KMS_SERVER_KEY, {
-      auth: { autoRefreshToken: false, persistSession: false }
+    const upstream = await fetch(`${KOSTPRO_READ_API_URL}?t=${Date.now()}`, {
+      method: 'GET',
+      cache: 'no-store',
+      headers: {
+        Accept: 'application/json',
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache'
+      }
     });
 
-    const direct = await kms
-      .from('properties')
-      .select('id,source_property_id,name,city,address,cover_url,facilities,rooms:rooms(id,source_room_id,name,room_type,price_monthly,status)')
-      .order('name');
+    const payload = await upstream.json().catch(() => null);
 
-    if (!direct.error && Array.isArray(direct.data)) {
-      const properties = direct.data
-        .map((property: any) => ({
-          ...property,
-          rooms: Array.isArray(property?.rooms)
-            ? property.rooms.filter((room: any) => String(room?.status || '').toUpperCase() === 'AVAILABLE')
-            : []
-        }))
-        .filter((property: any) => property.rooms.length > 0);
-
+    if (!upstream.ok || !payload || !Array.isArray(payload.properties)) {
       return NextResponse.json(
-        { source: 'kostpro', read_only: true, properties },
-        { headers: { 'Cache-Control': 'no-store, max-age=0' } }
-      );
-    }
-
-    const { data, error } = await kms.rpc('get_kostin_public_properties');
-    if (error) {
-      return NextResponse.json(
-        { source: 'kostpro', properties: [], error: 'KOSTPRO read endpoint unavailable' },
+        {
+          source: 'kostpro',
+          properties: [],
+          error: 'KOSTPRO read endpoint unavailable'
+        },
         { status: 502 }
       );
     }
+
+    const properties = payload.properties
+      .map((property: any) => ({
+        ...property,
+        rooms: Array.isArray(property?.rooms)
+          ? property.rooms.filter(
+              (room: any) =>
+                String(room?.status || '').toUpperCase() === 'AVAILABLE'
+            )
+          : []
+      }))
+      .filter((property: any) => property.rooms.length > 0);
 
     return NextResponse.json(
       {
         source: 'kostpro',
         read_only: true,
-        properties: Array.isArray(data)
-          ? data
-              .map((property: any) => ({
-                ...property,
-                rooms: Array.isArray(property?.rooms)
-                  ? property.rooms.filter((room: any) => String(room?.status || '').toLowerCase() === 'available')
-                  : []
-              }))
-              .filter((property: any) => property.rooms.length > 0)
-          : []
+        properties
       },
-      { headers: { 'Cache-Control': 'no-store, max-age=0' } }
+      {
+        headers: {
+          'Cache-Control': 'no-store, max-age=0'
+        }
+      }
     );
   } catch {
     return NextResponse.json(
-      { source: 'kostpro', properties: [], error: 'KOSTPRO read endpoint unavailable' },
+      {
+        source: 'kostpro',
+        properties: [],
+        error: 'KOSTPRO read endpoint unavailable'
+      },
       { status: 502 }
     );
   }
