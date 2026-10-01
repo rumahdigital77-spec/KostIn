@@ -12,8 +12,8 @@ const supabase = createClient(KOSTPRO_URL, KOSTPRO_KEY, { auth: { autoRefreshTok
 export default function Booking() {
   const [propertyId,setPropertyId]=useState('');
   const [roomId,setRoomId]=useState('');
-  const [rpcPropertyId,setRpcPropertyId]=useState('');
-  const [rpcRoomId,setRpcRoomId]=useState('');
+  const [rpcPropertyId,setRpcPropertyId]=useState<string>('');
+  const [rpcRoomId,setRpcRoomId]=useState<string>('');
   const [price,setPrice]=useState(0);
   const [roomStatus,setRoomStatus]=useState('LOADING');
   const [paymentMethod,setPaymentMethod]=useState('TRANSFER_BANK');
@@ -44,7 +44,12 @@ export default function Booking() {
         }
         const canonicalPropertyId = String(property?.id || '');
         const canonicalRoomId = String(room?.id || '');
-        if (!canonicalPropertyId || !canonicalRoomId) throw new Error('KOSTPRO tidak mengembalikan ID internal property/kamar.');
+        if (!canonicalPropertyId || !canonicalRoomId) {
+          setRoomStatus('ERROR');
+          setPrice(0);
+          setMessage('ID internal kamar KOSTPRO belum tersedia. Booking dihentikan agar tidak salah property.');
+          return;
+        }
         setRpcPropertyId(canonicalPropertyId);
         setRpcRoomId(canonicalRoomId);
         setRoomStatus('AVAILABLE');
