@@ -48,7 +48,7 @@ export default function Booking() {
       }
     };
     loadLiveRoom();
-    const timer=window.setInterval(loadLiveRoom,5000);
+    const timer=window.setInterval(loadLiveRoom,1500);
     const onVisible=()=>{if(document.visibilityState==='visible') loadLiveRoom();};
     document.addEventListener('visibilitychange',onVisible);
     return()=>{cancelled=true;window.clearInterval(timer);document.removeEventListener('visibilitychange',onVisible);};
