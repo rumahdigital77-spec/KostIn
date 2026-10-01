@@ -15,6 +15,8 @@ export default function Booking() {
   const [rpcPropertyId,setRpcPropertyId]=useState<string>('');
   const [rpcRoomId,setRpcRoomId]=useState<string>('');
   const [price,setPrice]=useState(0);
+  const [roomName,setRoomName]=useState('');
+  const [roomType,setRoomType]=useState('');
   const [roomStatus,setRoomStatus]=useState('LOADING');
   const [paymentMethod,setPaymentMethod]=useState('TRANSFER_BANK');
   const [message,setMessage]=useState('');
@@ -40,6 +42,10 @@ export default function Booking() {
         if(!room || String(room.status||'').toUpperCase()!=='AVAILABLE'){
           setRoomStatus('UNAVAILABLE');
           setPrice(0);
+          setRoomName('');
+          setRoomType('');
+          setRpcPropertyId('');
+          setRpcRoomId('');
           return;
         }
         // KOSTPRO public feed exposes the master/source IDs. Those are the
@@ -54,6 +60,8 @@ export default function Booking() {
         }
         setRpcPropertyId(canonicalPropertyId);
         setRpcRoomId(canonicalRoomId);
+        setRoomName(String(room.name || room.room_name || 'Kamar terpilih'));
+        setRoomType(String(room.room_type || 'Kamar'));
         setRoomStatus('AVAILABLE');
         setPrice(Math.max(0,Number(room.price_monthly)||0));
         setMessage('');
@@ -62,7 +70,7 @@ export default function Booking() {
       }
     };
     loadLiveRoom();
-    const timer=window.setInterval(loadLiveRoom,1500);
+    const timer=window.setInterval(loadLiveRoom,1000);
     const onVisible=()=>{if(document.visibilityState==='visible') loadLiveRoom();};
     document.addEventListener('visibilitychange',onVisible);
     return()=>{cancelled=true;window.clearInterval(timer);document.removeEventListener('visibilitychange',onVisible);};
@@ -154,10 +162,11 @@ export default function Booking() {
       <span className="eyebrow">BOOKING KAMAR</span>
       <h1>Amankan kamar pilihanmu.</h1>
       <p>Data booking dikirim langsung ke master KOSTPRO. Data property lain tidak dicampur.</p>
-      <div className="notice"><strong>Harga kamar: {roomStatus==='AVAILABLE' ? new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(price) : 'Memuat dari KOSTPRO…'}</strong><br/><small>Status dan harga kamar dibaca live dari Room Status KOSTPRO. Harga dari URL/client tidak digunakan.</small></div>
+      <div className="notice"><strong>Kamar terpilih: {roomName || 'Memuat dari KOSTPRO…'}</strong>{roomType && <><br/><small>Tipe: {roomType}</small></>}<br/><strong>Harga kamar: {roomStatus==='AVAILABLE' ? new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(price) : 'Memuat dari KOSTPRO…'}</strong><br/><small>Status dan harga kamar dibaca live dari Room Status KOSTPRO. Harga dari URL/client tidak digunakan.</small></div>
       {!propertyId||!roomId
         ? <div className="notice">Kamar belum dipilih. Silakan kembali ke daftar kamar tersedia.</div>
         : <form onSubmit={submit}>
+            <label>Kamar<input value={roomName ? `${roomName}${roomType ? ` · ${roomType}` : ''}` : 'Memuat kamar dari KOSTPRO…'} readOnly/></label>
             <label>Nama lengkap<input required name="name" placeholder="Nama kamu" autoComplete="name"/></label>
             <label>Nomor WhatsApp<input required name="phone" placeholder="08xxxxxxxxxx" inputMode="tel" autoComplete="tel"/></label>
             <label>Tanggal masuk<input required name="checkIn" type="date"/></label>
