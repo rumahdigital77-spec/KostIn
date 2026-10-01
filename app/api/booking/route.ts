@@ -26,7 +26,6 @@ export async function POST(request: Request) {
     const phone = String(body.phone || '').trim();
     const checkIn = String(body.checkIn || '').trim();
     const duration = Number(body.duration || 0);
-    const roomPrice = Number(body.roomPrice || 0); // legacy client field; never used as master price
     const paymentMethod = String(body.paymentMethod || 'TRANSFER_BANK').trim();
 
     if (
