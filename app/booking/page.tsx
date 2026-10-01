@@ -46,7 +46,7 @@ export default function Booking() {
         setMessage('Mohon lengkapi data booking dan pastikan harga kamar tersedia.');
         return;
       }
-      const { data, error } = await supabase.rpc('create_kostin_booking_in_kostpro', {
+      const { data, error } = await supabase.rpc('create_pending_booking', {
         p_property_id: payload.propertyId,
         p_room_id: payload.roomId,
         p_guest_name: payload.name,
@@ -60,13 +60,13 @@ export default function Booking() {
         setMessage(detail.includes('Kamar sudah tidak tersedia') ? 'Kamar sudah tidak tersedia. Silakan pilih kamar lain.' : detail.includes('Tanggal check-in') ? detail : detail.includes('Data booking') ? 'Mohon lengkapi semua data booking.' : 'Booking belum dapat dikirim ke KOSTPRO. Silakan coba lagi.');
         return;
       }
-      if(!data?.success){
-        setMessage('Booking belum berhasil dikirim ke KOSTPRO.');
-        return;
-      }
       const bookingId = typeof data === 'object' && data
         ? String((data as Record<string,unknown>).id || (data as Record<string,unknown>).booking_id || '')
         : '';
+      if (!bookingId) {
+        setMessage('KOSTPRO tidak mengembalikan ID booking. Data pembayaran tidak dibuat agar tidak tercampur.');
+        return;
+      }
       // Never create a payment row without the master booking id: that can
       // create an orphan payment record disconnected from the KOSTPRO booking.
       if (!bookingId) {
