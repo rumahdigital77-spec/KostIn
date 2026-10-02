@@ -1,4 +1,5 @@
 Production deploy trigger: KOSTPRO AVAILABLE / TERSEDIA / READY rooms are exposed to KostIn as canonical AVAILABLE.
 Live sync: KostIn polls the KOSTPRO public inventory feed every 1 second with no-store caching.
 Database feed: get_kostin_public_properties_v2 canonicalizes availability to AVAILABLE.
-Deployment trigger: 2026-10-02T11:00:00Z
+Booking gate: KOSTPRO create_kostin_booking_in_kostpro_v2 revalidates the selected room while locking the property state; non-AVAILABLE rooms are rejected.
+Deployment trigger: 2026-10-02T04:00:00Z
