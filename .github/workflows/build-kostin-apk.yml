@@ -1,0 +1,24 @@
+name: Build KostIn APK
+on:
+ workflow_dispatch:
+ push:
+  paths: ['android-app/**','.github/workflows/build-kostin-apk.yml']
+jobs:
+ build:
+  runs-on: ubuntu-latest
+  steps:
+   - uses: actions/checkout@v4
+   - uses: actions/setup-java@v4
+     with: {distribution: temurin, java-version: '17'}
+   - uses: android-actions/setup-android@v3
+   - run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+   - uses: gradle/actions/setup-gradle@v4
+     with: {gradle-version: '8.10.2'}
+   - name: Build APK
+     working-directory: android-app
+     run: gradle assembleRelease --no-daemon
+   - uses: actions/upload-artifact@v4
+     with:
+      name: KostIn-KOSTPRO
+      path: android-app/app/build/outputs/apk/release/app-release.apk
+      if-no-files-found: error
