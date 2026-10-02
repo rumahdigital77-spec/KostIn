@@ -2,59 +2,127 @@ package com.kostin.app;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.Handler;
 import android.graphics.Color;
-import android.graphics.BitmapFactory;
-import android.util.Base64;
+import android.graphics.Typeface;
+import android.view.Gravity;
 import android.view.ViewGroup;
-import android.webkit.*;
-import android.widget.*;
-import android.content.Intent;
-import android.net.Uri;
+import android.webkit.CookieManager;
+import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 public class MainActivity extends Activity {
-    WebView webView;
-    FrameLayout root;
+    private static final String HOME_URL = "https://kost-in-tau.vercel.app/";
+    private WebView webView;
 
     @Override
-    public void onCreate(Bundle b) {
-        super.onCreate(b);
-        root = new FrameLayout(this);
-        root.setBackgroundColor(Color.rgb(6, 43, 87));
-        ImageView splash = new ImageView(this);
-        splash.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         try {
-            byte[] data = Base64.decode(LogoData.BASE64, Base64.DEFAULT);
-            splash.setImageBitmap(BitmapFactory.decodeByteArray(data, 0, data.length));
-        } catch (Exception ignored) {}
-        root.addView(splash, new FrameLayout.LayoutParams(-1, -1));
-        setContentView(root);
-        new Handler().postDelayed(() -> openApp(splash), 900);
+            buildWebView();
+        } catch (Throwable t) {
+            showError(t);
+        }
     }
 
-    void openApp(ImageView splash) {
-        webView = new WebView(this);
-        WebSettings settings = webView.getSettings();
-        settings.setJavaScriptEnabled(true);
-        settings.setDomStorageEnabled(true);
-        settings.setDatabaseEnabled(true);
+    private void buildWebView() {
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setBackgroundColor(Color.rgb(6, 43, 87));
+
+        webView = new WebView(getApplicationContext());
+        webView.setBackgroundColor(Color.rgb(6, 43, 87));
+
+        WebSettings s = webView.getSettings();
+        s.setJavaScriptEnabled(true);
+        s.setDomStorageEnabled(true);
+        s.setDatabaseEnabled(true);
+        s.setJavaScriptCanOpenWindowsAutomatically(true);
+        s.setSupportMultipleWindows(false);
+        s.setBuiltInZoomControls(false);
+        s.setDisplayZoomControls(false);
+        s.setLoadWithOverviewMode(false);
+        s.setUseWideViewPort(false);
+        s.setMediaPlaybackRequiresUserGesture(false);
+        s.setCacheMode(WebSettings.LOAD_DEFAULT);
+
+        CookieManager cm = CookieManager.getInstance();
+        cm.setAcceptCookie(true);
+        cm.setAcceptThirdPartyCookies(webView, true);
+
+        webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new WebViewClient() {
-            @Override public boolean shouldOverrideUrlLoading(WebView v, String u) {
-                if (u.startsWith("https://kost-in-three.vercel.app/") || u.startsWith("https://kost-in-tau.vercel.app/")) {
-                    v.loadUrl(u); return true;
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                String u = request.getUrl().toString();
+                if (u.startsWith("http://") || u.startsWith("https://")) {
+                    view.loadUrl(u);
+                    return true;
                 }
-                try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(u))); } catch (Exception ignored) {}
-                return true;
+                return false;
+            }
+
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                if (request.isForMainFrame()) {
+                    showWebError(error != null ? String.valueOf(error.getDescription()) : "Koneksi gagal");
+                }
             }
         });
-        webView.setWebChromeClient(new WebChromeClient());
-        root.addView(webView, new FrameLayout.LayoutParams(-1, -1));
-        webView.loadUrl("https://kost-in-three.vercel.app/");
-        root.removeView(splash);
+
+        root.addView(webView, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
+        setContentView(root);
+        webView.loadUrl(HOME_URL);
     }
 
-    @Override public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) webView.goBack();
-        else super.onBackPressed();
+    private void showWebError(String message) {
+        if (webView == null) return;
+        String html = "<html><body style='margin:0;background:#062B57;color:#F7D778;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center'>" +
+                "<div><h2>KOSTIN</h2><p>Koneksi ke KostIn gagal.</p><p style='font-size:13px'>" + message + "</p>" +
+                "<button onclick='location.reload()' style='padding:12px 20px;border:0;border-radius:10px'>Coba Lagi</button></div></body></html>";
+        webView.loadDataWithBaseURL(HOME_URL, html, "text/html", "UTF-8", HOME_URL);
+    }
+
+    private void showError(Throwable t) {
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setGravity(Gravity.CENTER);
+        box.setPadding(32, 32, 32, 32);
+        box.setBackgroundColor(Color.rgb(6, 43, 87));
+
+        TextView title = new TextView(this);
+        title.setText("KOSTIN");
+        title.setTextColor(Color.rgb(247, 215, 120));
+        title.setTextSize(30);
+        title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        title.setGravity(Gravity.CENTER);
+
+        TextView msg = new TextView(this);
+        msg.setText("Aplikasi gagal dibuka. Silakan buka kembali aplikasi.");
+        msg.setTextColor(Color.WHITE);
+        msg.setTextSize(16);
+        msg.setGravity(Gravity.CENTER);
+        msg.setPadding(0, 24, 0, 0);
+
+        box.addView(title);
+        box.addView(msg);
+        setContentView(box);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (webView != null && webView.canGoBack()) {
+            webView.goBack();
+        } else {
+            super.onBackPressed();
+        }
     }
 }
