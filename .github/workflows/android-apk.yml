@@ -38,9 +38,13 @@ jobs:
         working-directory: android-app
         run: gradle assembleRelease --no-daemon
 
+      - name: Verify APK
+        run: ls -lh android-app/app/build/outputs/apk/release/*.apk
+
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         with:
-          name: KostIn-V1.0-APK
-          path: android-app/app/build/outputs/apk/release/app-release.apk
+          name: KostIn-V1.0-APK-${{ github.run_id }}
+          path: android-app/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
+          retention-days: 7
