@@ -158,9 +158,16 @@ export default function Home(){
     {filtered.map(p=>{const available=(p.rooms||[]).filter(r=>String(r.status).toUpperCase()==='AVAILABLE').length; const pid=String(p.source_property_id||p.id||''); const mine=(eligibleBookings[pid]||[]).filter(b=>!b.reviewed); return <article className="propertyCard" key={pid||p.name}>
       <Link href={propertyHref(p)}>
         <div className="propertyPhoto">{p.cover_url?<img src={p.cover_url} alt={p.name}/>:<span>🏠</span>}<label>{available} KAMAR TERSEDIA</label><span className="propertyArrow">→</span></div>
-        <div className="propertyBody"><div className="place">{p.city||'Indonesia'}</div><h3>{p.name}</h3><p>{p.address||'Lihat tipe kamar yang tersedia'}</p><div className="ratingPreview"><span className="stars" aria-label={`Rating ${p.rating||0} dari 5`}>{[1,2,3,4,5].map(i=><span key={i}>{i<=Math.round(p.rating||0)?'★':'☆'}</span>)}</span><span className="ratingNumber">{Number(p.rating||0).toFixed(1)}</span><span className="reviewCount">({p.review_count||0} Review)</span></div>
+        <div className="propertyBody">
+          <div className="place">{p.city||'Indonesia'}</div>
+          <h3>{p.name}</h3>
+          <p className="propertyAddress">📍 {p.address||'Lokasi properti'}</p>
+          <div className="ratingPreview"><span className="stars" aria-label={`Rating 0 dari 5`}>{[1,2,3,4,5].map(i=><span key={i}>{i<=Math.round(p.rating||0)?'★':'☆'}</span>)}</span><span className="ratingNumber">{Number(p.rating||0).toFixed(1)}</span><span className="reviewCount">({p.review_count||0} Review)</span></div>
           {p.reviews&&p.reviews.length>0&&<div className="propertyReviewSnippets">{p.reviews.map((r,i)=><div key={i}><span>{'★'.repeat(r.rating)}{'☆'.repeat(5-r.rating)}</span><p>"{r.comment}"</p><small>{r.reviewer_name||'Tamu Terverifikasi'}</small></div>)}</div>}
-          <strong>Lihat kamar yang tersedia <span>→</span></strong></div>
+          <div className="propertyRoomBar"><div><span className="roomIcon">🛏</span><div><b>{available} Kamar</b><small>Siap Booking</small></div></div><span className="roomArrow">→</span></div>
+        </div>
+        <button className="propertyFavorite" type="button" aria-label={`Favorit undefined`} onClick={(e)=>e.preventDefault()}>♡</button>
+</div>
       </Link>
       {userEmail&&mine.length>0&&<div className="homeReviewInvite"><span>✓ Sudah C.I. di kost ini</span><button type="button" onClick={()=>{setReviewPropertyId(pid);setReviewBooking(mine[0].id);setReviewRating(5);setReviewComment('');setReviewMessage('');}}>★ Beri bintang & komentar</button></div>}
     </article>})}
