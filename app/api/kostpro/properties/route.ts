@@ -3,33 +3,21 @@ import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
-const SUPABASE_URL =
-  process.env.KOSTPRO_SUPABASE_URL ||
-  process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  'https://vynsxajbqkgkudfbraog.supabase.co';
-
-const SUPABASE_PUBLISHABLE_KEY =
-  process.env.KOSTPRO_SUPABASE_PUBLISHABLE_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+// KOSTPRO is the single source of truth for public inventory.
+// Do not allow generic KostIn/NEXT_PUBLIC Supabase variables to redirect this feed.
+const KOSTPRO_SUPABASE_URL = 'https://vynsxajbqkgkudfbraog.supabase.co';
+const KOSTPRO_SUPABASE_PUBLISHABLE_KEY =
   'sb_publishable_0_9DNdvMlgPAebzVzk0HZw_iLlbg7GI';
 
 export async function GET() {
   try {
-    if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-      console.error('[KostIn] Missing KOSTPRO Supabase environment variables');
-      return NextResponse.json(
-        {
-          source: 'kostpro',
-          properties: [],
-          error: 'Konfigurasi koneksi KOSTPRO belum tersedia di server.'
-        },
-        { status: 500 }
-      );
-    }
-
-    const client = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-      auth: { autoRefreshToken: false, persistSession: false }
-    });
+    const client = createClient(
+      KOSTPRO_SUPABASE_URL,
+      KOSTPRO_SUPABASE_PUBLISHABLE_KEY,
+      {
+        auth: { autoRefreshToken: false, persistSession: false }
+      }
+    );
 
     const { data, error } = await client.rpc('get_kostin_public_properties');
 
@@ -48,15 +36,34 @@ export async function GET() {
     const properties = Array.isArray(data)
       ? data
           .map((property: any) => ({
-            ...property,
+            // source_property_id is the immutable identity.
+            source_property_id: String(property?.source_property_id || ''),
+            // The RPC now sources the display name from KOSTPRO properties.name.
+            name: String(property?.name || 'Property'),
+            city: property?.city ?? null,
+            address: property?.address ?? null,
+            cover_url: property?.cover_url ?? null,
+            facilities: Array.isArray(property?.facilities)
+              ? property.facilities
+              : [],
             rooms: Array.isArray(property?.rooms)
-              ? property.rooms.filter(
-                  (room: any) =>
-                    String(room?.status || '').toUpperCase() === 'AVAILABLE'
-                )
+              ? property.rooms
+                  .filter(
+                    (room: any) =>
+                      String(room?.status || '').toUpperCase() === 'AVAILABLE'
+                  )
+                  .map((room: any) => ({
+                    ...room,
+                    source_room_id: String(room?.source_room_id || room?.id || ''),
+                    name: String(room?.name || room?.source_room_id || 'Kamar')
+                  }))
               : []
           }))
-          .filter((property: any) => property.rooms.length > 0)
+          // Never publish a property without its immutable source ID.
+          .filter(
+            (property: any) =>
+              property.source_property_id && property.rooms.length > 0
+          )
       : [];
 
     return NextResponse.json(
