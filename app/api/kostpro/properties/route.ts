@@ -3,8 +3,6 @@ import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
-// KOSTPRO is the single source of truth for public inventory.
-// Do not allow generic KostIn/NEXT_PUBLIC Supabase variables to redirect this feed.
 const KOSTPRO_SUPABASE_URL = 'https://vynsxajbqkgkudfbraog.supabase.co';
 const KOSTPRO_SUPABASE_PUBLISHABLE_KEY =
   'sb_publishable_0_9DNdvMlgPAebzVzk0HZw_iLlbg7GI';
@@ -19,7 +17,7 @@ export async function GET() {
       }
     );
 
-    const { data, error } = await client.rpc('get_kostin_public_properties');
+    const { data, error } = await client.rpc('get_kostin_public_properties_v2');
 
     if (error) {
       console.error('[KostIn] KOSTPRO public feed RPC failed:', error);
@@ -36,9 +34,7 @@ export async function GET() {
     const properties = Array.isArray(data)
       ? data
           .map((property: any) => ({
-            // source_property_id is the immutable identity.
             source_property_id: String(property?.source_property_id || ''),
-            // The RPC now sources the display name from KOSTPRO properties.name.
             name: String(property?.name || 'Property'),
             city: property?.city ?? null,
             address: property?.address ?? null,
@@ -59,7 +55,6 @@ export async function GET() {
                   }))
               : []
           }))
-          // Never publish a property without its immutable source ID.
           .filter(
             (property: any) =>
               property.source_property_id && property.rooms.length > 0
