@@ -44,7 +44,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: KostIn-V1.1-APK-${{ github.run_id }}
+          name: KostIn-V1.2-APK-${{ github.run_id }}
           path: android-app/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
           retention-days: 7
