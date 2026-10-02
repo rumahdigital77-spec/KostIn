@@ -362,3 +362,18 @@ footer{background:#fff;color:#667085;border-top:1px solid #e5eaf2}
 .propertyBody>strong span{display:flex!important;align-items:center!important;justify-content:center!important;width:28px!important;height:28px!important;border-radius:50%!important;background:#1764ca!important;color:#fff!important}
 @media(max-width:1050px){.propertyGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:650px){.propertyGrid{grid-template-columns:1fr!important;gap:16px!important}.propertyPhoto{height:220px!important;min-height:220px!important}}
+
+/* REFERENCE CARD CONTENT */
+.propertyAddress{font-size:12px!important;color:#334155!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.propertyFavorite{position:absolute;right:18px;top:255px;z-index:10;width:40px;height:40px;border:0;border-radius:50%;background:#fff;color:#172033;font-size:25px;line-height:1;box-shadow:0 6px 18px rgba(15,23,42,.16);cursor:pointer}
+.propertyRoomBar{display:flex;align-items:center;justify-content:space-between;margin-top:13px;padding:10px 12px;border-radius:18px;background:linear-gradient(135deg,#eafaf8,#f1f8ff)}
+.propertyRoomBar>div{display:flex;align-items:center;gap:10px}
+.roomIcon{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:14px;background:#dff7f4;font-size:21px}
+.roomIcon+div{display:flex;flex-direction:column;gap:2px}
+.roomIcon+div b{font-size:14px;color:#17304f}
+.roomIcon+div small{font-size:11px;color:#718096}
+.roomArrow{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:#175fc7;color:#fff;font-size:24px}
+.propertyCard:nth-child(3n) .propertyRoomBar{background:linear-gradient(135deg,#f5edff,#fbf7ff)}
+.propertyCard:nth-child(3n) .roomIcon{background:#eadcff}
+.propertyCard:nth-child(3n) .roomArrow{background:#8848e8}
+@media(max-width:650px){.propertyFavorite{top:237px;right:16px}.propertyRoomBar{margin-top:11px}}
