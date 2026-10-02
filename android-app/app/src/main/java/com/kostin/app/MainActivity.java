@@ -17,7 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
-    private static final String HOME_URL = "https://kost-in-tau.vercel.app/";
+    private static final String HOME_URL = "https://kost-in-three.vercel.app/";
     private WebView webView;
 
     @Override
