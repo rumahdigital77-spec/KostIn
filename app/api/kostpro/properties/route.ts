@@ -31,8 +31,16 @@ export async function GET() {
       );
     }
 
-    const properties = Array.isArray(data)
+    const rawProperties = Array.isArray(data)
       ? data
+      : typeof data === 'string'
+        ? JSON.parse(data)
+        : data && Array.isArray(data.properties)
+          ? data.properties
+          : [];
+
+    const properties = Array.isArray(rawProperties)
+      ? rawProperties
           .map((property: any) => ({
             source_property_id: String(property?.source_property_id || ''),
             name: String(property?.name || 'Property'),
@@ -46,7 +54,7 @@ export async function GET() {
               ? property.rooms
                   .filter(
                     (room: any) =>
-                      String(room?.status || '').toUpperCase() === 'AVAILABLE'
+                      ['AVAILABLE','TERSEDIA','READY'].includes(String(room?.status || '').toUpperCase())
                   )
                   .map((room: any) => ({
                     ...room,
