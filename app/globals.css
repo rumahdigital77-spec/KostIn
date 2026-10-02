@@ -49,3 +49,170 @@ body{background:var(--kp-ink);letter-spacing:.01em}
 .book:hover,.search button:hover,.authSubmit:hover,.reviewSubmit:hover{transform:translateY(-2px);filter:brightness(1.06);box-shadow:0 14px 34px rgba(180,133,45,.28)}
 .stats b,.propertyBody strong,.bottom strong,.roomPrice strong{background:linear-gradient(110deg,#f0d58f,#b98b3b);-webkit-background-clip:text;background-clip:text;color:transparent}
 @media(max-width:560px){.premiumHero:after{width:300px;height:300px;right:-30%;top:18%}.propertyPhoto{height:205px}.propertyBody h3{font-size:20px}.search{flex-direction:column}.search button{padding:13px}}
+
+
+/* KOSTIN MODERN PREMIUM V3 — aligned with KOSTPRO luxury command-center palette */
+:root{
+  --ki-bg:#060605;
+  --ki-panel:#0d0d0b;
+  --ki-panel2:#12110e;
+  --ki-gold:#e0bd69;
+  --ki-gold-soft:#b9974d;
+  --ki-text:#f5f1e8;
+  --ki-muted:#918b80;
+  --ki-line:rgba(224,189,105,.15);
+}
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(900px 500px at 78% -10%,rgba(188,145,55,.12),transparent 62%),
+    var(--ki-bg);
+}
+.siteHeader{
+  height:78px;
+  padding:0 clamp(18px,5vw,72px);
+  background:rgba(6,6,5,.78);
+  border-bottom:1px solid var(--ki-line);
+  box-shadow:0 16px 45px rgba(0,0,0,.32);
+}
+.brand{gap:11px}
+.brand .logo{
+  width:40px;height:40px;border-radius:12px;
+  background:linear-gradient(145deg,#f0d58d,#a97b30);
+  box-shadow:0 8px 30px rgba(204,158,58,.2);
+}
+.brand b{font-size:24px}
+.mainNav{gap:25px}
+.mainNav a{position:relative;transition:color .2s}
+.mainNav a:after{
+  content:"";position:absolute;left:0;right:100%;bottom:-8px;height:1px;
+  background:var(--ki-gold);transition:right .2s;
+}
+.mainNav a:hover:after{right:0}
+
+.premiumHero{
+  min-height:575px;
+  padding:92px clamp(18px,5vw,72px) 58px;
+  grid-template-columns:minmax(0,1.2fr) minmax(320px,.8fr);
+  background:
+    radial-gradient(500px 300px at 86% 20%,rgba(224,189,105,.15),transparent 68%),
+    linear-gradient(135deg,#080806 0%,#12100b 52%,#080806 100%);
+}
+.premiumHero:after{
+  width:560px;height:560px;right:-15%;top:0;
+  border-color:rgba(224,189,105,.09);
+}
+.premiumHero h1{
+  max-width:850px;
+  margin:16px 0 18px;
+  font-weight:800;
+  letter-spacing:-3.5px;
+}
+.premiumHero p{font-size:16px;max-width:590px}
+.search{
+  min-height:66px;
+  padding:8px;
+  border-radius:16px;
+  background:rgba(246,243,235,.97);
+  box-shadow:0 25px 70px rgba(0,0,0,.48);
+}
+.search input{font-size:14px}
+.search button{
+  border-radius:11px;
+  padding:0 24px;
+  background:linear-gradient(135deg,#f0d58d,#a97a2d);
+}
+
+.premiumStats{
+  margin:0 clamp(18px,5vw,72px);
+  position:relative;
+  z-index:3;
+  margin-top:-1px;
+  border:1px solid var(--ki-line);
+  border-top:0;
+  border-radius:0 0 18px 18px;
+  background:rgba(13,13,11,.72);
+  backdrop-filter:blur(14px);
+}
+.premiumStats div{min-height:84px;display:flex;justify-content:center;flex-direction:column}
+.premiumStats b{font-size:27px}
+
+.section{padding:64px clamp(18px,5vw,72px)}
+.sectionHead{margin-bottom:28px}
+.sectionHead h2{font-size:34px;letter-spacing:-1px}
+.propertyGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.propertyCard{
+  position:relative;
+  border-radius:22px;
+  border-color:rgba(224,189,105,.13);
+  background:linear-gradient(155deg,#15140f,#0c0c0a);
+  overflow:hidden;
+  transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease;
+}
+.propertyCard:hover{
+  transform:translateY(-7px);
+  border-color:rgba(224,189,105,.38);
+  box-shadow:0 28px 70px rgba(0,0,0,.5),0 0 35px rgba(174,128,45,.07);
+}
+.propertyPhoto{
+  height:255px;
+  background:radial-gradient(circle at 50% 30%,#4a391d,#181611 55%,#0a0a09);
+}
+.propertyPhoto:before{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(0,0,0,.04),transparent 45%,rgba(0,0,0,.62));
+  z-index:1;pointer-events:none;
+}
+.propertyPhoto img{transition:transform .55s ease}
+.propertyCard:hover .propertyPhoto img{transform:scale(1.045)}
+.propertyPhoto label,.propertyArrow{z-index:2}
+.propertyPhoto label{
+  border:1px solid rgba(224,189,105,.2);
+  background:rgba(8,8,7,.68);
+  backdrop-filter:blur(8px);
+}
+.propertyArrow{
+  width:42px;height:42px;
+  background:linear-gradient(135deg,#f0d58d,#a9792e);
+  box-shadow:0 8px 24px rgba(0,0,0,.3);
+  transition:transform .2s;
+}
+.propertyCard:hover .propertyArrow{transform:translateX(2px)}
+.propertyBody{padding:22px}
+.propertyBody .place{color:#c4a15a;font-weight:800}
+.propertyBody h3{font-size:22px;letter-spacing:-.4px}
+.propertyBody p{min-height:34px}
+.ratingPreview{margin:12px 0 6px}
+.ratingNumber{color:#ddd5c8}
+.ratingEmpty{color:#9b9386}
+.propertyBody strong{font-size:12px}
+
+.trustStrip{
+  margin:8px clamp(18px,5vw,72px) 65px;
+  border-radius:22px;
+  border:1px solid var(--ki-line);
+  box-shadow:0 20px 55px rgba(0,0,0,.3);
+}
+.trustStrip div{background:linear-gradient(145deg,#11110e,#0b0b09)}
+.trustStrip span{color:var(--ki-gold)}
+footer{background:#070706;border-top-color:var(--ki-line);padding:42px 18px}
+
+@media(max-width:850px){
+  .premiumHero{grid-template-columns:1fr;padding-top:68px}
+  .premiumStats{grid-template-columns:repeat(3,1fr)}
+  .propertyGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){
+  .siteHeader{height:72px}
+  .brand b{font-size:22px}
+  .premiumHero{padding:55px 18px 35px}
+  .premiumHero h1{font-size:44px;letter-spacing:-2.3px}
+  .premiumHero p{font-size:14px}
+  .premiumStats{grid-template-columns:1fr;margin:0 18px}
+  .premiumStats div{min-height:70px;padding:16px 20px;border-right:0;border-bottom:1px solid var(--ki-line)}
+  .premiumStats div:last-child{border-bottom:0}
+  .propertyGrid{grid-template-columns:1fr;gap:18px}
+  .propertyPhoto{height:220px}
+  .propertyBody{padding:20px}
+  .trustStrip{margin:8px 18px 40px}
+}
