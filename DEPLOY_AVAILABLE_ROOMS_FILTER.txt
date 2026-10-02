@@ -3,3 +3,4 @@ Live sync: KostIn polls the KOSTPRO public inventory feed every 1 second with no
 Database feed: get_kostin_public_properties_v2 canonicalizes availability to AVAILABLE.
 Booking gate: KOSTPRO create_kostin_booking_in_kostpro_v2 revalidates the selected room while locking the property state; non-AVAILABLE rooms are rejected.
 Deployment trigger: 2026-10-02T04:00:00Z
+Property frame redeploy trigger: 1790917590483
