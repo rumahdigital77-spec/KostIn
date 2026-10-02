@@ -1,3 +1,4 @@
-Production deploy trigger: only KOSTPRO AVAILABLE rooms are exposed to KostIn.
-Live sync: refresh KOSTPRO availability every 5 seconds on KostIn catalog and property pages.
-Deployment trigger: 2026-09-30T13:17:00.297Z
+Production deploy trigger: KOSTPRO AVAILABLE / TERSEDIA / READY rooms are exposed to KostIn as canonical AVAILABLE.
+Live sync: KostIn polls the KOSTPRO public inventory feed every 1 second with no-store caching.
+Database feed: get_kostin_public_properties_v2 canonicalizes availability to AVAILABLE.
+Deployment trigger: 2026-10-02T11:00:00Z
