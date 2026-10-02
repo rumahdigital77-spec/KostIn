@@ -313,3 +313,26 @@ footer{background:#fff;color:#667085;border-top:1px solid #e5eaf2}
 .homeReviewInvite{position:relative;z-index:2;border-top:1px solid #dbeafe;background:linear-gradient(135deg,#eff6ff,#ecfeff);padding:11px 13px}
 @media(max-width:1050px){.propertyGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.propertyGrid{grid-template-columns:1fr;gap:18px}.propertyPhoto{height:225px}.propertyBody{padding:19px}.propertyBody h3{font-size:21px}}
+
+/* PROPERTY CARDS — MATCH REFERENCE FRAME */
+.propertyGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.propertyCard{border:2px solid #dce7f5;border-radius:24px;background:#fff;box-shadow:0 14px 36px rgba(30,41,59,.10)}
+.propertyCard:nth-child(3n+1){border-color:#18b7b1}
+.propertyCard:nth-child(3n+2){border-color:#2879e8}
+.propertyCard:nth-child(3n){border-color:#8b45ef}
+.propertyCard:before{background:linear-gradient(135deg,rgba(37,99,235,.045),transparent 38%,rgba(6,182,212,.035))}
+.propertyPhoto{height:250px;border-radius:20px 20px 0 0}
+.propertyPhoto:after{content:"";position:absolute;inset:auto 0 0;height:70px;background:linear-gradient(transparent,rgba(15,23,42,.35));pointer-events:none;z-index:2}
+.propertyPhoto label{font-size:11px;padding:9px 13px;background:rgba(255,255,255,.95);color:#1666d3;border-color:#fff}
+.propertyBody{padding:18px 20px 16px}
+.propertyBody h3{font-size:22px}
+.ratingPreview{margin:10px 0 8px;padding-top:10px}
+.stars{font-size:17px;letter-spacing:0;color:#f7b500;text-shadow:0 1px 4px rgba(247,181,0,.22)}
+.stars span{display:inline-block}
+.ratingNumber{font-size:13px;color:#172033}
+.reviewCount{font-size:11px;color:#7b8798}
+.ratingEmpty{display:none}
+.propertyBody>strong{margin-top:8px;padding:13px 14px;border-radius:15px;background:#f4f8ff;border-top:0;color:#175fc7}
+.propertyBody>strong span{width:30px;height:30px;background:#175fc7;color:#fff}
+@media(max-width:1050px){.propertyGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.propertyGrid{grid-template-columns:1fr}.propertyPhoto{height:225px}}
