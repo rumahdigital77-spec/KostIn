@@ -35,7 +35,7 @@ public class MainActivity extends Activity {
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Color.rgb(6, 43, 87));
 
-        webView = new WebView(getApplicationContext());
+        webView = new WebView(this);
         webView.setBackgroundColor(Color.rgb(6, 43, 87));
 
         WebSettings s = webView.getSettings();
@@ -49,7 +49,8 @@ public class MainActivity extends Activity {
         s.setLoadWithOverviewMode(false);
         s.setUseWideViewPort(false);
         s.setMediaPlaybackRequiresUserGesture(false);
-        s.setCacheMode(WebSettings.LOAD_DEFAULT);
+        s.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        s.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
 
         CookieManager cm = CookieManager.getInstance();
         cm.setAcceptCookie(true);
