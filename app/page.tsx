@@ -10,7 +10,7 @@ const supabase = createClient(
 );
 
 type Room = { id?: string; source_room_id?: string; name: string; room_type?: string; price_monthly: number; status: string };
-type Property = { id?: string; source_property_id?: string; name: string; city?: string; address?: string; cover_url?: string | null; rooms?: Room[]; rating?: number; review_count?: number };
+type Review = { rating:number; comment:string; reviewer_name:string; created_at:string };\ntype Property = { id?: string; source_property_id?: string; name: string; city?: string; address?: string; cover_url?: string | null; rooms?: Room[]; rating?: number; review_count?: number; reviews?: Review[] };
 
 export default function Home(){
  const [properties,setProperties]=useState<Property[]>([]);
@@ -24,7 +24,7 @@ export default function Home(){
  const [password,setPassword]=useState('');
  const [authMessage,setAuthMessage]=useState('');
  const [loadingAuth,setLoadingAuth]=useState(false);
- const [userEmail,setUserEmail]=useState('');
+ const [userEmail,setUserEmail]=useState('');\n const [eligibleBookings,setEligibleBookings]=useState<Record<string,{id:string;room_name:string;check_in:string;reviewed:boolean}[]>>({});\n const [reviewPropertyId,setReviewPropertyId]=useState('');\n const [reviewBooking,setReviewBooking]=useState('');\n const [reviewRating,setReviewRating]=useState(5);\n const [reviewComment,setReviewComment]=useState('');\n const [reviewMessage,setReviewMessage]=useState('');\n const [reviewBusy,setReviewBusy]=useState(false);
 
  useEffect(()=>{
    let cancelled=false;
@@ -38,7 +38,7 @@ export default function Home(){
          const {data}=await supabase.rpc('get_kostin_property_reviews',{p_source_property_id:String(p.source_property_id||'')});
          const reviews=Array.isArray(data)?data:[];
          const avg=reviews.length?reviews.reduce((s:number,r:{rating:number})=>s+Number(r.rating||0),0)/reviews.length:0;
-         return {...p,rooms:Array.isArray(p.rooms)?p.rooms.filter(r=>String(r.status||'').toUpperCase()==='AVAILABLE'):[],rating:Number(avg.toFixed(1)),review_count:reviews.length};
+         return {...p,rooms:Array.isArray(p.rooms)?p.rooms.filter(r=>String(r.status||'').toUpperCase()==='AVAILABLE'):[],rating:Number(avg.toFixed(1)),review_count:reviews.length,reviews:reviews.slice(0,2)};
        }));
        if(!cancelled){setProperties(rated);setSource(d.source==='kostpro'?'KOSTPRO':'KOSONG');setError('');}
      }catch(e){ if(!cancelled){setProperties([]);setSource('ERROR');setError(e instanceof Error?e.message:'Gagal membaca data KOSTPRO');} }
@@ -52,7 +52,7 @@ export default function Home(){
  },[]);
 
  const filtered=useMemo(()=>properties.filter(p=>(p.name+' '+(p.city||'')+' '+(p.address||'')).toLowerCase().includes(q.toLowerCase())),[properties,q]);
- const propertyHref=(p:Property)=>'/kost/'+encodeURIComponent(String(p.source_property_id||p.id||''));
+ const propertyHref=(p:Property)=>'/kost/'+encodeURIComponent(String(p.source_property_id||p.id||''));\n\n const propertyIdsKey=useMemo(()=>properties.map(p=>String(p.source_property_id||p.id||'')).filter(Boolean).sort().join(','),[properties]);\n useEffect(()=>{\n   let cancelled=false;\n   async function loadEligibility(){\n     if(!userEmail||!propertyIdsKey){setEligibleBookings({});return;}\n     const entries=await Promise.all(propertyIdsKey.split(',').map(async id=>{const {data}=await supabase.rpc('get_my_completed_kostin_bookings',{p_source_property_id:id});return [id,Array.isArray(data)?data:[]] as const;}));\n     if(!cancelled)setEligibleBookings(Object.fromEntries(entries));\n   }\n   loadEligibility();\n   return()=>{cancelled=true;};\n },[userEmail,propertyIdsKey]);\n\n async function submitReview(){\n   if(!reviewBooking)return;\n   setReviewBusy(true);setReviewMessage('');\n   const {error}=await supabase.rpc('create_kostin_review',{p_booking_id:reviewBooking,p_rating:reviewRating,p_comment:reviewComment});\n   if(error){setReviewMessage(error.message);}\n   else{\n     setReviewMessage('Terima kasih. Bintang dan komentar berhasil dipublikasikan.');\n     setReviewComment('');setReviewBooking('');setReviewRating(5);\n     const id=reviewPropertyId;\n     const {data}=await supabase.rpc('get_my_completed_kostin_bookings',{p_source_property_id:id});\n     setEligibleBookings(prev=>({...prev,[id]:Array.isArray(data)?data:[]}));\n     const reviews=await supabase.rpc('get_kostin_property_reviews',{p_source_property_id:id});\n     const list=Array.isArray(reviews.data)?reviews.data:[];\n     setProperties(prev=>prev.map(p=>String(p.source_property_id||p.id)===id?{...p,rating:list.length?Number((list.reduce((a:number,r:Review)=>a+Number(r.rating||0),0)/list.length).toFixed(1)):0,review_count:list.length,reviews:list.slice(0,2)}:p));\n   }\n   setReviewBusy(false);\n }
 
  async function submitAuth(e:React.FormEvent){
    e.preventDefault(); setLoadingAuth(true); setAuthMessage('');
@@ -117,10 +117,15 @@ export default function Home(){
   <section className="section" id="properti">
    <div className="sectionHead"><div><span className="eyebrow">PROPERTI KOST</span><h2>Pilih properti</h2></div></div>
    <div className="propertyGrid">
-    {filtered.map(p=>{const available=(p.rooms||[]).filter(r=>String(r.status).toUpperCase()==='AVAILABLE').length; return <Link className="propertyCard" href={propertyHref(p)} key={p.source_property_id||p.id||p.name}>
-      <div className="propertyPhoto">{p.cover_url?<img src={p.cover_url} alt={p.name}/>:<span>🏠</span>}<label>{available} KAMAR TERSEDIA</label><span className="propertyArrow">→</span></div>
-      <div className="propertyBody"><div className="place">{p.city||'Indonesia'}</div><h3>{p.name}</h3><p>{p.address||'Lihat tipe kamar yang tersedia'}</p><div className="ratingPreview">{p.review_count?<><span className="stars" aria-label={`Rating ${p.rating} dari 5`}>{[1,2,3,4,5].map(i=><span key={i}>{i<=Math.round(p.rating||0)?'★':'☆'}</span>)}</span><span className="ratingNumber">{p.rating?.toFixed(1)}</span><span className="reviewCount">({p.review_count} ulasan)</span></>:<span className="ratingEmpty">Belum ada ulasan</span>}</div><strong>Lihat kamar yang tersedia <span>→</span></strong></div>
-    </Link>})}
+    {filtered.map(p=>{const available=(p.rooms||[]).filter(r=>String(r.status).toUpperCase()==='AVAILABLE').length; const pid=String(p.source_property_id||p.id||''); const mine=(eligibleBookings[pid]||[]).filter(b=>!b.reviewed); return <article className="propertyCard" key={pid||p.name}>
+      <Link href={propertyHref(p)}>
+        <div className="propertyPhoto">{p.cover_url?<img src={p.cover_url} alt={p.name}/>:<span>🏠</span>}<label>{available} KAMAR TERSEDIA</label><span className="propertyArrow">→</span></div>
+        <div className="propertyBody"><div className="place">{p.city||'Indonesia'}</div><h3>{p.name}</h3><p>{p.address||'Lihat tipe kamar yang tersedia'}</p><div className="ratingPreview">{p.review_count?<><span className="stars" aria-label={`Rating ${p.rating} dari 5`}>{[1,2,3,4,5].map(i=><span key={i}>{i<=Math.round(p.rating||0)?'★':'☆'}</span>)}</span><span className="ratingNumber">{p.rating?.toFixed(1)}</span><span className="reviewCount">({p.review_count} ulasan)</span></>:<span className="ratingEmpty">Belum ada ulasan</span>}</div>
+          {p.reviews&&p.reviews.length>0&&<div className="propertyReviewSnippets">{p.reviews.map((r,i)=><div key={i}><span>{'★'.repeat(r.rating)}{'☆'.repeat(5-r.rating)}</span><p>"{r.comment}"</p><small>{r.reviewer_name||'Tamu Terverifikasi'}</small></div>)}</div>}
+          <strong>Lihat kamar yang tersedia <span>→</span></strong></div>
+      </Link>
+      {userEmail&&mine.length>0&&<div className="homeReviewInvite"><span>✓ Sudah C.I. di kost ini</span><button type="button" onClick={()=>{setReviewPropertyId(pid);setReviewBooking(mine[0].id);setReviewRating(5);setReviewComment('');setReviewMessage('');}}>★ Beri bintang & komentar</button></div>}
+    </article>})}
    </div>
    {error&&<div className="empty">Data KOSTPRO belum dapat dibaca. {error}</div>}
    {!error&&filtered.length===0&&<div className="empty">Belum ada properti dengan kamar tersedia untuk pencarian ini.</div>}
