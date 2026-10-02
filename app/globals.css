@@ -237,3 +237,45 @@ body::after{
   box-shadow:0 8px 24px rgba(0,0,0,.28);
   pointer-events:none;
 }
+
+
+/* KOSTIN FULL-COLOUR PROPERTY COMMAND CENTER V1 */
+:root{
+ --fc-bg:#f4f7fb;--fc-panel:#fff;--fc-ink:#14213d;--fc-muted:#667085;
+ --fc-blue:#2563eb;--fc-cyan:#06b6d4;--fc-green:#22c55e;--fc-purple:#7c3aed;
+ --fc-red:#ef4444;--fc-orange:#f59e0b;--fc-line:#e7edf6;
+}
+html,body{background:linear-gradient(135deg,#f6f9ff 0%,#eef7ff 48%,#fbf7ff 100%);color:var(--fc-ink)}
+body:before{content:"";position:fixed;inset:0;z-index:-5;pointer-events:none;background:radial-gradient(700px 350px at 78% 0%,rgba(37,99,235,.12),transparent 70%),radial-gradient(600px 350px at 5% 45%,rgba(6,182,212,.08),transparent 70%),radial-gradient(600px 360px at 90% 70%,rgba(124,58,237,.08),transparent 70%)}
+.siteHeader{height:74px;padding:0 clamp(18px,4vw,64px);background:rgba(255,255,255,.92);border-bottom:1px solid #e5eaf2;box-shadow:0 10px 30px rgba(30,64,175,.08);backdrop-filter:blur(14px)}
+.brand b{color:#14213d}.brand b span{color:#2563eb}.brand small{color:#7b8799;letter-spacing:1.2px}
+.brand .logo{background:linear-gradient(135deg,#2563eb,#06b6d4);color:#fff;box-shadow:0 8px 22px rgba(37,99,235,.25)}
+.mainNav a{color:#475467}.mainNav a:hover{color:#2563eb}
+.authIconBtn{border-color:#dbe4f0;background:#f8fafc;color:#2563eb}.signupIcon{background:linear-gradient(135deg,#2563eb,#06b6d4);color:#fff}
+.premiumHero{min-height:500px;padding:66px clamp(18px,4vw,64px) 42px;background:linear-gradient(120deg,#172554 0%,#1d4ed8 42%,#06b6d4 100%);overflow:hidden}
+.premiumHero:before{background:linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px);background-size:64px 64px;opacity:.35}
+.premiumHero:after{border-color:rgba(255,255,255,.14);box-shadow:0 0 100px rgba(255,255,255,.12)}
+.premiumHero .eyebrow{color:#bfdbfe}.premiumHero h1{color:#fff;text-shadow:0 8px 25px rgba(0,0,0,.2)}.premiumHero h1 em{background:linear-gradient(110deg,#fff,#dbeafe);-webkit-background-clip:text;color:transparent}.premiumHero p{color:#dbeafe}
+.search{border:0;background:#fff;box-shadow:0 20px 50px rgba(15,23,42,.25)}.search button{background:linear-gradient(135deg,#2563eb,#06b6d4);color:#fff}
+.premiumStats{background:#fff;border:1px solid #e5eaf2;box-shadow:0 12px 30px rgba(30,64,175,.08)}.premiumStats b{background:none;-webkit-text-fill-color:initial;color:#2563eb}.premiumStats span{color:#667085}
+.section{padding:52px clamp(18px,4vw,64px)}.sectionHead h2{color:#172554}.sectionHead .eyebrow{color:#2563eb}
+.propertyGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}.propertyCard{background:#fff;border:1px solid #e3e9f2;border-radius:20px;box-shadow:0 12px 30px rgba(30,41,59,.08);color:#172033}
+.propertyCard:hover{border-color:#93c5fd;box-shadow:0 20px 45px rgba(37,99,235,.16);transform:translateY(-5px)}
+.propertyPhoto{height:225px;background:linear-gradient(135deg,#dbeafe,#cffafe)}.propertyPhoto:before{background:linear-gradient(180deg,transparent 45%,rgba(15,23,42,.45))}
+.propertyPhoto label{background:rgba(255,255,255,.94);border:0;color:#2563eb}.propertyArrow{background:linear-gradient(135deg,#2563eb,#06b6d4);color:#fff}
+.propertyBody{padding:19px}.propertyBody .place{color:#2563eb}.propertyBody h3{color:#172033}.propertyBody p{color:#667085}.propertyBody strong{background:none;-webkit-text-fill-color:initial;color:#2563eb}
+.ratingNumber{color:#344054}.ratingEmpty{color:#667085}
+.trustStrip{margin:8px clamp(18px,4vw,64px) 55px;background:#e3e9f2;border:1px solid #e3e9f2;border-radius:18px;box-shadow:0 12px 30px rgba(30,41,59,.06)}.trustStrip div{background:#fff}.trustStrip span{color:#2563eb}.trustStrip b{color:#172033}.trustStrip small{color:#667085}
+footer{background:#fff;color:#667085;border-top:1px solid #e5eaf2}
+.book,.reviewSubmit,.authSubmit{background:linear-gradient(135deg,#2563eb,#06b6d4);color:#fff}
+.bookingPage,.detailPage,.dashboardPage{background:linear-gradient(135deg,#f6f9ff,#eef7ff 55%,#fbf7ff);color:#172033}
+.bookingCard,.dashCard,.reviewCard,.roomRow,.detailPhoto{background:#fff;border-color:#e3e9f2;box-shadow:0 12px 32px rgba(30,41,59,.08)}
+.bookingCard h1,.detailInfo h1,.dashHeader h1,.dashCard h2{color:#172554}
+.bookingCard p,.detailInfo p,.dashHeader p{color:#667085}
+.bookingCard input,.bookingCard select,.authModal input,.claimForm input,.reviewCard select,.reviewCard textarea{background:#f8fafc;color:#172033;border-color:#dbe4f0}
+.roomBadge{color:#059669;border-color:#bbf7d0;background:#ecfdf3}.roomRow p{color:#667085}.roomPrice strong{background:none;-webkit-text-fill-color:initial;color:#2563eb}
+.dashStats article{background:#fff;border-color:#e3e9f2;box-shadow:0 10px 25px rgba(30,41,59,.07)}.dashStats span,.dashStats small{color:#667085}.dashStats strong{color:#2563eb}
+.dashNotice{background:linear-gradient(135deg,#eff6ff,#ecfeff);border-color:#bfdbfe}.dashNotice b{color:#2563eb}.dashNotice span{color:#475467}
+.authOverlay{background:rgba(15,23,42,.45)}.authModal{background:#fff;border-color:#e3e9f2;box-shadow:0 25px 80px rgba(15,23,42,.22)}.authModal h2{color:#172554}.authModal>p,.authModal label{color:#667085}
+@media(max-width:850px){.propertyGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.propertyGrid{grid-template-columns:1fr}.premiumHero{padding-top:52px}.premiumHero h1{font-size:43px}}
