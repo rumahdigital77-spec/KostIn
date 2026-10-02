@@ -10,7 +10,8 @@ const supabase = createClient(
 );
 
 type Room = { id?: string; source_room_id?: string; name: string; room_type?: string; price_monthly: number; status: string };
-type Review = { rating:number; comment:string; reviewer_name:string; created_at:string };\ntype Property = { id?: string; source_property_id?: string; name: string; city?: string; address?: string; cover_url?: string | null; rooms?: Room[]; rating?: number; review_count?: number; reviews?: Review[] };
+type Review = { rating:number; comment:string; reviewer_name:string; created_at:string };
+type Property = { id?: string; source_property_id?: string; name: string; city?: string; address?: string; cover_url?: string | null; rooms?: Room[]; rating?: number; review_count?: number; reviews?: Review[] };
 
 export default function Home(){
  const [properties,setProperties]=useState<Property[]>([]);
@@ -24,7 +25,14 @@ export default function Home(){
  const [password,setPassword]=useState('');
  const [authMessage,setAuthMessage]=useState('');
  const [loadingAuth,setLoadingAuth]=useState(false);
- const [userEmail,setUserEmail]=useState('');\n const [eligibleBookings,setEligibleBookings]=useState<Record<string,{id:string;room_name:string;check_in:string;reviewed:boolean}[]>>({});\n const [reviewPropertyId,setReviewPropertyId]=useState('');\n const [reviewBooking,setReviewBooking]=useState('');\n const [reviewRating,setReviewRating]=useState(5);\n const [reviewComment,setReviewComment]=useState('');\n const [reviewMessage,setReviewMessage]=useState('');\n const [reviewBusy,setReviewBusy]=useState(false);
+ const [userEmail,setUserEmail]=useState('');
+ const [eligibleBookings,setEligibleBookings]=useState<Record<string,{id:string;room_name:string;check_in:string;reviewed:boolean}[]>>({});
+ const [reviewPropertyId,setReviewPropertyId]=useState('');
+ const [reviewBooking,setReviewBooking]=useState('');
+ const [reviewRating,setReviewRating]=useState(5);
+ const [reviewComment,setReviewComment]=useState('');
+ const [reviewMessage,setReviewMessage]=useState('');
+ const [reviewBusy,setReviewBusy]=useState(false);
 
  useEffect(()=>{
    let cancelled=false;
@@ -52,7 +60,37 @@ export default function Home(){
  },[]);
 
  const filtered=useMemo(()=>properties.filter(p=>(p.name+' '+(p.city||'')+' '+(p.address||'')).toLowerCase().includes(q.toLowerCase())),[properties,q]);
- const propertyHref=(p:Property)=>'/kost/'+encodeURIComponent(String(p.source_property_id||p.id||''));\n\n const propertyIdsKey=useMemo(()=>properties.map(p=>String(p.source_property_id||p.id||'')).filter(Boolean).sort().join(','),[properties]);\n useEffect(()=>{\n   let cancelled=false;\n   async function loadEligibility(){\n     if(!userEmail||!propertyIdsKey){setEligibleBookings({});return;}\n     const entries=await Promise.all(propertyIdsKey.split(',').map(async id=>{const {data}=await supabase.rpc('get_my_completed_kostin_bookings',{p_source_property_id:id});return [id,Array.isArray(data)?data:[]] as const;}));\n     if(!cancelled)setEligibleBookings(Object.fromEntries(entries));\n   }\n   loadEligibility();\n   return()=>{cancelled=true;};\n },[userEmail,propertyIdsKey]);\n\n async function submitReview(){\n   if(!reviewBooking)return;\n   setReviewBusy(true);setReviewMessage('');\n   const {error}=await supabase.rpc('create_kostin_review',{p_booking_id:reviewBooking,p_rating:reviewRating,p_comment:reviewComment});\n   if(error){setReviewMessage(error.message);}\n   else{\n     setReviewMessage('Terima kasih. Bintang dan komentar berhasil dipublikasikan.');\n     setReviewComment('');setReviewBooking('');setReviewRating(5);\n     const id=reviewPropertyId;\n     const {data}=await supabase.rpc('get_my_completed_kostin_bookings',{p_source_property_id:id});\n     setEligibleBookings(prev=>({...prev,[id]:Array.isArray(data)?data:[]}));\n     const reviews=await supabase.rpc('get_kostin_property_reviews',{p_source_property_id:id});\n     const list=Array.isArray(reviews.data)?reviews.data:[];\n     setProperties(prev=>prev.map(p=>String(p.source_property_id||p.id)===id?{...p,rating:list.length?Number((list.reduce((a:number,r:Review)=>a+Number(r.rating||0),0)/list.length).toFixed(1)):0,review_count:list.length,reviews:list.slice(0,2)}:p));\n   }\n   setReviewBusy(false);\n }
+ const propertyHref=(p:Property)=>'/kost/'+encodeURIComponent(String(p.source_property_id||p.id||''));
+
+ const propertyIdsKey=useMemo(()=>properties.map(p=>String(p.source_property_id||p.id||'')).filter(Boolean).sort().join(','),[properties]);
+ useEffect(()=>{
+   let cancelled=false;
+   async function loadEligibility(){
+     if(!userEmail||!propertyIdsKey){setEligibleBookings({});return;}
+     const entries=await Promise.all(propertyIdsKey.split(',').map(async id=>{const {data}=await supabase.rpc('get_my_completed_kostin_bookings',{p_source_property_id:id});return [id,Array.isArray(data)?data:[]] as const;}));
+     if(!cancelled)setEligibleBookings(Object.fromEntries(entries));
+   }
+   loadEligibility();
+   return()=>{cancelled=true;};
+ },[userEmail,propertyIdsKey]);
+
+ async function submitReview(){
+   if(!reviewBooking)return;
+   setReviewBusy(true);setReviewMessage('');
+   const {error}=await supabase.rpc('create_kostin_review',{p_booking_id:reviewBooking,p_rating:reviewRating,p_comment:reviewComment});
+   if(error){setReviewMessage(error.message);}
+   else{
+     setReviewMessage('Terima kasih. Bintang dan komentar berhasil dipublikasikan.');
+     setReviewComment('');setReviewBooking('');setReviewRating(5);
+     const id=reviewPropertyId;
+     const {data}=await supabase.rpc('get_my_completed_kostin_bookings',{p_source_property_id:id});
+     setEligibleBookings(prev=>({...prev,[id]:Array.isArray(data)?data:[]}));
+     const reviews=await supabase.rpc('get_kostin_property_reviews',{p_source_property_id:id});
+     const list=Array.isArray(reviews.data)?reviews.data:[];
+     setProperties(prev=>prev.map(p=>String(p.source_property_id||p.id)===id?{...p,rating:list.length?Number((list.reduce((a:number,r:Review)=>a+Number(r.rating||0),0)/list.length).toFixed(1)):0,review_count:list.length,reviews:list.slice(0,2)}:p));
+   }
+   setReviewBusy(false);
+ }
 
  async function submitAuth(e:React.FormEvent){
    e.preventDefault(); setLoadingAuth(true); setAuthMessage('');
