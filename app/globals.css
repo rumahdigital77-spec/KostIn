@@ -216,3 +216,24 @@ footer{background:#070706;border-top-color:var(--ki-line);padding:42px 18px}
   .propertyBody{padding:20px}
   .trustStrip{margin:8px 18px 40px}
 }
+
+
+/* App version badge */
+body::after{
+  content:"KostIn V1.0";
+  position:fixed;
+  left:14px;
+  bottom:12px;
+  z-index:9999;
+  padding:7px 11px;
+  border:1px solid rgba(224,189,105,.24);
+  border-radius:999px;
+  background:rgba(8,8,7,.82);
+  color:#cdb36f;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.08em;
+  backdrop-filter:blur(10px);
+  box-shadow:0 8px 24px rgba(0,0,0,.28);
+  pointer-events:none;
+}
