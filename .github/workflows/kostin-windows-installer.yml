@@ -1,0 +1,36 @@
+name: Build KostIn Windows Installer
+on:
+  push:
+    branches: [main]
+    paths:
+      - "desktop-app/**"
+      - ".github/workflows/kostin-windows-installer.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  build-windows-installer:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: desktop-app/package.json
+      - name: Install dependencies
+        working-directory: desktop-app
+        run: npm install
+      - name: Build Windows installer
+        working-directory: desktop-app
+        run: npm run dist
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: KostIn-Windows-Setup
+          path: desktop-app/dist/KostIn-Setup-*.exe
+          if-no-files-found: error
+          retention-days: 14
